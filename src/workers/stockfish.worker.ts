@@ -1,97 +1,140 @@
-import type { StockfishMessage, WorkerResponse } from "../types/stockfish";
+import type { WorkerInMessage, WorkerOutMessage } from "../types";
 
-const wasmPath = "/stockfish/stockfish-18-lite-single.js";
+const STOCKFISH_PATH = "/stockfish/stockfish-18-lite-single.js";
 
-let stockfish: Worker | null = null;
-let currentMoveLabel: string | null = null;
+type EngineState =
+  | "uninitialized"
+  | "initializing"
+  | "idle"
+  | "analysing"
+  | "stopping";
+
+let engine: Worker | null = null;
+let state: EngineState = "uninitialized";
+let currentLabel = "";
+
+let pendingAnalysis: { fen: string; depth: number; moveLabel: string } | null =
+  null;
+
+function send(msg: WorkerOutMessage) {
+  self.postMessage(msg);
+}
+
+function startAnalysis(fen: string, depth: number, moveLabel: string) {
+  if (!engine || state !== "idle") return;
+  currentLabel = moveLabel;
+  state = "analysing";
+  engine.postMessage(`position fen ${fen}`);
+  engine.postMessage(`go depth ${depth}`);
+}
+
+function handleBestmove() {
+  state = "idle";
+  send({ type: "bestmove", moveLabel: currentLabel });
+
+  if (pendingAnalysis) {
+    const { fen, depth, moveLabel } = pendingAnalysis;
+    pendingAnalysis = null;
+    startAnalysis(fen, depth, moveLabel);
+  }
+}
+
+function stopCurrent() {
+  if (!engine) return;
+  if (state === "analysing") {
+    state = "stopping";
+    engine.postMessage("stop");
+    setTimeout(() => {
+      if (state === "stopping") {
+        state = "idle";
+        if (pendingAnalysis) {
+          const { fen, depth, moveLabel } = pendingAnalysis;
+          pendingAnalysis = null;
+          startAnalysis(fen, depth, moveLabel);
+        }
+      }
+    }, 500);
+  }
+}
 
 function initEngine() {
-  stockfish = new Worker(wasmPath);
+  state = "initializing";
+  engine = new Worker(STOCKFISH_PATH);
 
-  stockfish.onmessage = (e: MessageEvent<string>) => {
-    const line: string = e.data;
-    const response = parseLine(line);
-    if (response) {
-      self.postMessage(response);
+  engine.onmessage = ({ data }: MessageEvent<string>) => {
+    const line = data;
+
+    if (line === "uciok") {
+      engine?.postMessage("isready");
+      return;
+    }
+
+    if (line === "readyok") {
+      state = "idle";
+      send({ type: "ready" });
+      return;
+    }
+
+    if (line.startsWith("info") && line.includes("score")) {
+      const mateMatch = line.match(/score mate (-?\d+)/);
+      if (mateMatch) {
+        const mateIn = parseInt(mateMatch[1]);
+        send({
+          type: "score",
+          moveLabel: currentLabel,
+          score: mateIn > 0 ? 9999 : -9999,
+          isMate: true,
+          mateIn,
+        });
+        return;
+      }
+
+      const cpMatch = line.match(/score cp (-?\d+)/);
+      if (cpMatch) {
+        send({
+          type: "score",
+          moveLabel: currentLabel,
+          score: parseInt(cpMatch[1]),
+          isMate: false,
+          mateIn: null,
+        });
+      }
+    }
+
+    if (line.startsWith("bestmove")) {
+      handleBestmove();
     }
   };
 
-  stockfish.postMessage("uci");
-  stockfish.postMessage("isready");
+  engine.postMessage("uci");
 }
 
-function parseLine(line: string): WorkerResponse | null {
-  if (line === "uciok" || line === "readyok") {
-    return { type: "ready" };
-  }
-
-  if (
-    line.startsWith("info") &&
-    line.includes("score") &&
-    line.includes("depth")
-  ) {
-    const depthMatch = line.match(/depth (\d+)/);
-    const cpMatch = line.match(/score cp (-?\d+)/);
-    const mateMatch = line.match(/score mate (-?\d+)/);
-
-    const depth = depthMatch ? parseInt(depthMatch[1]) : 0;
-    if (depth < 8) return null;
-
-    if (mateMatch) {
-      const mateIn = parseInt(mateMatch[1]);
-      const score = mateIn > 0 ? 9999 : -9999;
-      return {
-        type: "score",
-        move: "",
-        score,
-        moveLabel: currentMoveLabel ?? "",
-      };
-    }
-
-    if (cpMatch) {
-      const score = parseInt(cpMatch[1]);
-      return {
-        type: "score",
-        move: "",
-        score,
-        moveLabel: currentMoveLabel ?? "",
-      };
-    }
-  }
-
-  if (line.startsWith("bestmove")) {
-    const match = line.match(/bestmove ([a-h][1-8][a-h][1-8])/);
-    const move = match ? match[1] : null;
-    return { type: "bestmove", move, moveLabel: currentMoveLabel ?? "" };
-  }
-
-  return null;
-}
-
-self.onmessage = (e: MessageEvent<StockfishMessage>) => {
-  const msg = e.data;
-
-  switch (msg.type) {
-    case "init":
-      initEngine();
-      break;
-
+self.onmessage = ({ data }: MessageEvent<WorkerInMessage>) => {
+  switch (data.type) {
     case "analyse":
-      if (!stockfish) return;
-      currentMoveLabel = msg.moveLabel ?? null;
-      stockfish.postMessage("stop");
-      stockfish.postMessage(`position fen ${msg.fen}`);
-      stockfish.postMessage(`go depth ${msg.depth ?? 12}`);
+      if (state === "idle") {
+        startAnalysis(data.fen, data.depth, data.moveLabel);
+      } else if (state === "analysing" || state === "stopping") {
+        pendingAnalysis = {
+          fen: data.fen,
+          depth: data.depth,
+          moveLabel: data.moveLabel,
+        };
+        if (state === "analysing") stopCurrent();
+      }
       break;
 
     case "stop":
-      stockfish?.postMessage("stop");
+      pendingAnalysis = null;
+      stopCurrent();
       break;
 
     case "quit":
-      stockfish?.postMessage("quit");
-      stockfish?.terminate();
-      stockfish = null;
+      pendingAnalysis = null;
+      engine?.postMessage("quit");
+      engine?.terminate();
+      engine = null;
+      state = "uninitialized";
       break;
   }
 };

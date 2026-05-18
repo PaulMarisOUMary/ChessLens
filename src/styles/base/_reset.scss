@@ -6,7 +6,43 @@
     padding: 0;
 }
 
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+}
+
 body {
-    font-family: system-ui, sans-serif;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
     -webkit-font-smoothing: antialiased;
+    background: #0a0a0a;
+    color: #e8e8e8;
+}
+
+button {
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+}
+
+input[type='range'] {
+    appearance: none;
+    height: 2px;
+    border-radius: 0;
+    outline: none;
+    cursor: pointer;
+
+    &::-webkit-slider-thumb {
+        appearance: none;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #e8e8e8;
+        cursor: pointer;
+    }
 }

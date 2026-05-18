@@ -1,80 +1,120 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Chess } from "chess.js";
-import type { Move, Square } from "chess.js";
-
-export type GameStatus =
-  | "playing"
-  | "check"
-  | "checkmate"
-  | "stalemate"
-  | "draw";
+import type { Square } from "chess.js";
+import type { GameStatus, HistoryEntry, Side } from "../types";
+import { INITIAL_FEN, getGameStatus, getLegalDestinations } from "../utils/fen";
 
 interface UseChessGame {
   fen: string;
-  turn: "w" | "b";
+  turn: Side;
   status: GameStatus;
   isGameOver: boolean;
-  makeMove: (from: Square, to: Square, promotion?: string) => Move | null;
-  getLegalMoves: (square: Square) => Square[];
+  history: HistoryEntry[];
+  activePly: number;
+  isRewinding: boolean;
+  makeMove: (from: string, to: string, promotion?: string) => boolean;
+  getLegalMoves: (square: string) => string[];
+  goToPly: (ply: number) => void;
   reset: () => void;
 }
 
-function getStatus(game: Chess): GameStatus {
-  if (game.isCheckmate()) return "checkmate";
-  if (game.isStalemate()) return "stalemate";
-  if (game.isDraw()) return "draw";
-  if (game.isCheck()) return "check";
-  return "playing";
-}
-
 export function useChessGame(): UseChessGame {
-  const [game, setGame] = useState(() => new Chess());
-  const [fen, setFen] = useState(() => new Chess().fen());
+  const gameRef = useRef(new Chess());
+
+  const [fen, setFen] = useState(INITIAL_FEN);
+  const [turn, setTurn] = useState<Side>("w");
   const [status, setStatus] = useState<GameStatus>("playing");
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [activePly, setActivePly] = useState(0);
+  const [historyLength, setHistoryLength] = useState(0);
+
+  const historyRef = useRef<HistoryEntry[]>([]);
+  const isRewinding = activePly < historyLength;
+
+  const syncFromGame = useCallback((game: Chess) => {
+    setFen(game.fen());
+    setTurn(game.turn() as Side);
+    setStatus(getGameStatus(game));
+    setIsGameOver(game.isGameOver());
+  }, []);
 
   const makeMove = useCallback(
-    (from: Square, to: Square, promotion = "q"): Move | null => {
-      let result: Move | null = null;
+    (from: string, to: string, promotion = "q"): boolean => {
+      if (activePly < historyLength) return false;
 
-      setGame((prev) => {
-        const updated = new Chess(prev.fen());
-        try {
-          result = updated.move({ from, to, promotion });
-        } catch {
-          return prev;
-        }
-        setFen(updated.fen());
-        setStatus(getStatus(updated));
-        return updated;
-      });
+      const game = gameRef.current;
+      const prevTurn = game.turn() as Side;
 
-      return result;
+      try {
+        const result = game.move({
+          from: from as Square,
+          to: to as Square,
+          promotion,
+        });
+        if (!result) return false;
+
+        const entry: HistoryEntry = {
+          fen: game.fen(),
+          san: result.san,
+          uci: `${from}${to}`,
+          side: prevTurn,
+          ply: historyRef.current.length + 1,
+        };
+
+        historyRef.current = [...historyRef.current, entry];
+        setHistory([...historyRef.current]);
+        setHistoryLength(historyRef.current.length);
+        setActivePly(historyRef.current.length);
+        syncFromGame(game);
+        return true;
+      } catch {
+        return false;
+      }
     },
-    [],
+    [activePly, historyLength, syncFromGame],
   );
 
   const getLegalMoves = useCallback(
-    (square: Square): Square[] => {
-      const moves = game.moves({ square, verbose: true });
-      return moves.map((m) => m.to as Square);
+    (square: string): string[] => {
+      return getLegalDestinations(fen, square);
     },
-    [game],
+    [fen],
+  );
+
+  const goToPly = useCallback(
+    (ply: number) => {
+      const clamped = Math.max(0, Math.min(historyRef.current.length, ply));
+      const targetFen =
+        clamped === 0 ? INITIAL_FEN : historyRef.current[clamped - 1].fen;
+
+      gameRef.current = new Chess(targetFen);
+      setActivePly(clamped);
+      syncFromGame(gameRef.current);
+    },
+    [syncFromGame],
   );
 
   const reset = useCallback(() => {
-    const fresh = new Chess();
-    setGame(fresh);
-    setFen(fresh.fen());
-    setStatus("playing");
-  }, []);
+    gameRef.current = new Chess();
+    historyRef.current = [];
+    setHistory([]);
+    setHistoryLength(0);
+    setActivePly(0);
+    syncFromGame(gameRef.current);
+  }, [syncFromGame]);
 
   return {
     fen,
-    turn: game.turn(),
+    turn,
     status,
-    isGameOver: game.isGameOver(),
+    isGameOver,
+    history,
+    activePly,
+    isRewinding,
     makeMove,
     getLegalMoves,
+    goToPly,
     reset,
   };
 }

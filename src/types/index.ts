@@ -1,0 +1,58 @@
+export type EngineStatus = "loading" | "ready" | "analysing" | "error";
+
+export type WorkerInMessage =
+  | { type: "analyse"; fen: string; depth: number; moveLabel: string }
+  | { type: "stop" }
+  | { type: "quit" };
+
+export type WorkerOutMessage =
+  | { type: "ready" }
+  | {
+      type: "score";
+      moveLabel: string;
+      score: number;
+      isMate: boolean;
+      mateIn: number | null;
+    }
+  | { type: "bestmove"; moveLabel: string };
+
+export type ScoreKind = "normal" | "mate-good" | "mate-bad";
+export type HeatmapMode = "source" | "destination";
+
+export interface MoveScore {
+  move: string;
+  from: string;
+  to: string;
+  score: number;
+  normalizedScore: number;
+  kind: ScoreKind;
+  mateIn: number | null;
+}
+
+export type GameStatus =
+  | "playing"
+  | "check"
+  | "checkmate"
+  | "stalemate"
+  | "draw";
+export type Side = "w" | "b";
+
+export interface HistoryEntry {
+  fen: string;
+  san: string;
+  uci: string;
+  side: Side;
+  ply: number;
+}
+
+export interface Settings {
+  depth: number;
+  heatmapEnabled: boolean;
+  heatmapOpacity: number;
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+  depth: 10,
+  heatmapEnabled: true,
+  heatmapOpacity: 0.75,
+};
