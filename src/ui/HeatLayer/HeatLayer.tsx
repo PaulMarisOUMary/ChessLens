@@ -1,4 +1,4 @@
-import type { MoveScore } from "../../types";
+import type { MoveScore, HeatmapMode } from "../../types";
 import {
   scoreToColor,
   MATE_GOOD_COLOR,
@@ -6,52 +6,22 @@ import {
 } from "../../utils/color";
 import styles from "./HeatLayer.module.scss";
 
-interface HeatLayerProps {
+export interface HeatLayerProps {
   moveScores: MoveScore[];
   boardWidth: number;
-  mode: "source" | "destination";
+  mode: HeatmapMode;
   opacity: number;
 }
 
-export function HeatLayer({
-  moveScores,
-  boardWidth,
-  mode,
-  opacity,
-}: HeatLayerProps) {
-  const squareSize = boardWidth / 8;
-
-  const squares =
-    mode === "source"
-      ? getBestScorePerSource(moveScores)
-      : moveScores.map((s) => ({
-          square: s.to,
-          normalizedScore: s.normalizedScore,
-          rawScore: s.score,
-          kind: s.kind,
-          mateIn: s.mateIn,
-        }));
-
-  return (
-    <div className={styles.layer}>
-      {squares.map(({ square, normalizedScore, rawScore, kind, mateIn }) => (
-        <HeatSquare
-          key={`${mode}-${square}`}
-          square={square}
-          score={normalizedScore}
-          rawScore={rawScore}
-          kind={kind}
-          mateIn={mateIn}
-          squareSize={squareSize}
-          mode={mode}
-          opacity={opacity}
-        />
-      ))}
-    </div>
-  );
+interface SquareData {
+  square: string;
+  normalizedScore: number;
+  rawScore: number;
+  kind: string;
+  mateIn: number | null;
 }
 
-function getBestScorePerSource(scores: MoveScore[]) {
+function getBestScorePerSource(scores: MoveScore[]): SquareData[] {
   const map = new Map<string, MoveScore>();
   for (const s of scores) {
     const current = map.get(s.from);
@@ -68,20 +38,53 @@ function getBestScorePerSource(scores: MoveScore[]) {
   }));
 }
 
-interface HeatSquareProps {
-  square: string;
-  score: number;
-  rawScore: number;
-  kind: string;
-  mateIn: number | null;
+function toSquareData(s: MoveScore): SquareData {
+  return {
+    square: s.to,
+    normalizedScore: s.normalizedScore,
+    rawScore: s.score,
+    kind: s.kind,
+    mateIn: s.mateIn,
+  };
+}
+
+export function HeatLayer({
+  moveScores,
+  boardWidth,
+  mode,
+  opacity,
+}: HeatLayerProps) {
+  const squareSize = boardWidth / 8;
+
+  const squares: SquareData[] =
+    mode === "source"
+      ? getBestScorePerSource(moveScores)
+      : moveScores.map(toSquareData);
+
+  return (
+    <div className={styles.layer}>
+      {squares.map((sq) => (
+        <HeatSquare
+          key={`${mode}-${sq.square}`}
+          squareSize={squareSize}
+          mode={mode}
+          opacity={opacity}
+          {...sq}
+        />
+      ))}
+    </div>
+  );
+}
+
+interface HeatSquareProps extends SquareData {
   squareSize: number;
-  mode: "source" | "destination";
+  mode: HeatmapMode;
   opacity: number;
 }
 
 function HeatSquare({
   square,
-  score,
+  normalizedScore,
   rawScore,
   kind,
   mateIn,
@@ -90,14 +93,17 @@ function HeatSquare({
   opacity,
 }: HeatSquareProps) {
   const file = square.charCodeAt(0) - "a".charCodeAt(0);
-  const rank = 8 - parseInt(square[1]);
+  const rank = 8 - parseInt(square[1], 10);
 
   const bgColor =
     kind === "mate-good"
       ? MATE_GOOD_COLOR(opacity)
       : kind === "mate-bad"
         ? MATE_BAD_COLOR(opacity)
-        : scoreToColor(score, mode === "source" ? opacity : opacity * 0.75);
+        : scoreToColor(
+            normalizedScore,
+            mode === "source" ? opacity : opacity * 0.75,
+          );
 
   const displayScore = rawScore / 100;
   const label =

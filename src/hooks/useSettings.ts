@@ -1,8 +1,15 @@
 import { useState, useCallback, useRef } from "react";
 import type { Settings } from "../types";
 import { DEFAULT_SETTINGS } from "../types";
+import {
+  DEPTH_MIN,
+  DEPTH_MAX,
+  DEPTH_DEBOUNCE_MS,
+  HEATMAP_OPACITY_MIN,
+  HEATMAP_OPACITY_MAX,
+} from "../constants";
 
-interface UseSettings {
+export interface UseSettings {
   settings: Settings;
   displayDepth: number;
   setDepth: (v: number) => void;
@@ -16,12 +23,12 @@ export function useSettings(): UseSettings {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setDepth = useCallback((v: number) => {
-    const clamped = Math.min(18, Math.max(1, v));
+    const clamped = Math.min(DEPTH_MAX, Math.max(DEPTH_MIN, v));
     setDisplayDepth(clamped);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSettings((s) => ({ ...s, depth: clamped }));
-    }, 800);
+    }, DEPTH_DEBOUNCE_MS);
   }, []);
 
   const setHeatmapEnabled = useCallback((v: boolean) => {
@@ -31,7 +38,10 @@ export function useSettings(): UseSettings {
   const setHeatmapOpacity = useCallback((v: number) => {
     setSettings((s) => ({
       ...s,
-      heatmapOpacity: Math.min(1, Math.max(0.1, v)),
+      heatmapOpacity: Math.min(
+        HEATMAP_OPACITY_MAX,
+        Math.max(HEATMAP_OPACITY_MIN, v),
+      ),
     }));
   }, []);
 

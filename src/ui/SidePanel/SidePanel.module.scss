@@ -1,0 +1,127 @@
+@use '../../styles/abstracts' as *;
+
+.panel {
+    width: 280px;
+    min-width: 260px;
+    background: $surface-1;
+    border-left: 1px solid $border;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    @media (max-width: 768px) {
+        width: 100%;
+        height: auto !important;
+        border-left: none;
+        border-top: 1px solid $border;
+    }
+}
+
+
+.statusRow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid $border-subtle;
+    flex-shrink: 0;
+}
+
+.statusDot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: $text-muted;
+    flex-shrink: 0;
+
+    &.playing {
+        background: #4a9a5a;
+    }
+
+    &.check {
+        background: $check-color;
+    }
+
+    &.checkmate {
+        background: $checkmate-color;
+    }
+
+    &.stalemate,
+    &.draw {
+        background: $draw-color;
+    }
+}
+
+.statusText {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: $text-secondary;
+
+    &.check {
+        color: $check-color;
+    }
+
+    &.checkmate {
+        color: $checkmate-color;
+    }
+
+    &.stalemate,
+    &.draw {
+        color: $draw-color;
+    }
+}
+
+.rewindBadge {
+    margin-left: auto;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $text-secondary;
+    border: 1px solid $border;
+    padding: 0.15rem 0.4rem;
+}
+
+
+.section {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid $border-subtle;
+    flex-shrink: 0;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.sectionTitle {
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $text-muted;
+    margin-bottom: 0.7rem;
+}
+
+
+.historySection {
+    padding: 0.9rem 1.25rem 0.4rem;
+    border-bottom: 1px solid $border-subtle;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    @media (max-width: 768px) {
+        max-height: 180px;
+    }
+}
+
+
+.settingsHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+}

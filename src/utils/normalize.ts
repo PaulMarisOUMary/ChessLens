@@ -1,4 +1,5 @@
 import type { MoveScore, ScoreKind } from "../types";
+import { MATE_SENTINEL_CP } from "../constants";
 
 interface RawScore {
   move: string;
@@ -36,7 +37,7 @@ export function normalizeScores(raw: RawScore[]): MoveScore[] {
       move: s.move,
       from: s.from,
       to: s.to,
-      score: s.score,
+      score: isGood ? MATE_SENTINEL_CP : -MATE_SENTINEL_CP,
       normalizedScore: isGood ? 1 : 0,
       kind: (isGood ? "mate-good" : "mate-bad") as ScoreKind,
       mateIn: Math.abs(s.mateIn ?? 0),

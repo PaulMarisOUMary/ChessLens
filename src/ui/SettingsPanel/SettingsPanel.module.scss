@@ -1,0 +1,54 @@
+@use '../../styles/abstracts' as *;
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.label {
+    font-size: 0.7rem;
+    color: $text-secondary;
+    white-space: nowrap;
+
+    em {
+        color: $text-primary;
+        font-style: normal;
+        font-weight: 600;
+        margin-left: 0.25rem;
+    }
+}
+
+.toggle {
+    border: 1px solid $border;
+    color: $text-muted;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.55rem;
+    background: none;
+    transition: border-color 0.1s, color 0.1s;
+
+    &.on {
+        border-color: $accent-dim;
+        color: $text-primary;
+    }
+}
+
+.slider {
+    flex: 1;
+    accent-color: $text-primary;
+    background: $border;
+}

@@ -14,8 +14,9 @@ export function getGameStatus(game: Chess): GameStatus {
 
 export function getLegalDestinations(fen: string, square: string): string[] {
   const game = new Chess(fen);
-  const moves = game.moves({ square: square as Square, verbose: true });
-  return moves.map((m) => m.to);
+  return game
+    .moves({ square: square as Square, verbose: true })
+    .map((m) => m.to);
 }
 
 export function getLegalMoves(

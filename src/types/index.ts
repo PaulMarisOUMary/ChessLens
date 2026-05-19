@@ -16,8 +16,8 @@ export type WorkerOutMessage =
     }
   | { type: "bestmove"; moveLabel: string };
 
+
 export type ScoreKind = "normal" | "mate-good" | "mate-bad";
-export type HeatmapMode = "source" | "destination";
 
 export interface MoveScore {
   move: string;
@@ -29,12 +29,16 @@ export interface MoveScore {
   mateIn: number | null;
 }
 
+export type HeatmapMode = "source" | "destination";
+
+
 export type GameStatus =
   | "playing"
   | "check"
   | "checkmate"
   | "stalemate"
   | "draw";
+
 export type Side = "w" | "b";
 
 export interface HistoryEntry {
@@ -44,6 +48,7 @@ export interface HistoryEntry {
   side: Side;
   ply: number;
 }
+
 
 export interface Settings {
   depth: number;

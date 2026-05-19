@@ -4,7 +4,7 @@ import type { Square } from "chess.js";
 import type { GameStatus, HistoryEntry, Side } from "../types";
 import { INITIAL_FEN, getGameStatus, getLegalDestinations } from "../utils/fen";
 
-interface UseChessGame {
+export interface UseChessGame {
   fen: string;
   turn: Side;
   status: GameStatus;
@@ -76,9 +76,7 @@ export function useChessGame(): UseChessGame {
   );
 
   const getLegalMoves = useCallback(
-    (square: string): string[] => {
-      return getLegalDestinations(fen, square);
-    },
+    (square: string): string[] => getLegalDestinations(fen, square),
     [fen],
   );
 

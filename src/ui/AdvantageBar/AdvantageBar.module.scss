@@ -1,0 +1,55 @@
+@use '../../styles/abstracts' as *;
+
+.advantageBar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pieceLabel {
+    font-size: 0.85rem;
+    color: $text-muted;
+    line-height: 1;
+}
+
+.barTrack {
+    flex: 1;
+    height: 4px;
+    background: $surface-3;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid $border-subtle;
+}
+
+.barFill {
+    height: 100%;
+    background: $text-primary;
+    transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    will-change: width;
+}
+
+.barScan {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, #ffffff33, transparent);
+    animation: scan 1.2s ease-in-out infinite;
+}
+
+@keyframes scan {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.advantageScore {
+    @include mono;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: $text-secondary;
+    min-width: 2.8rem;
+    text-align: right;
+}

@@ -17,6 +17,8 @@ export function scoreToColor(normalized: number, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-export const MATE_GOOD_COLOR = (alpha: number) =>
+export const MATE_GOOD_COLOR = (alpha: number): string =>
   `rgba(139, 92, 246, ${alpha})`;
-export const MATE_BAD_COLOR = (alpha: number) => `rgba(220, 20,  60, ${alpha})`;
+
+export const MATE_BAD_COLOR = (alpha: number): string =>
+  `rgba(220, 20, 60, ${alpha})`;

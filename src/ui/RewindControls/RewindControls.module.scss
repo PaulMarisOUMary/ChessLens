@@ -1,0 +1,50 @@
+@use '../../styles/abstracts' as *;
+
+.row {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn {
+    border: 1px solid $border;
+    color: $text-muted;
+    font-size: 0.72rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    transition: border-color 0.1s, color 0.1s;
+
+    &:hover:not(:disabled) {
+        border-color: $accent-dim;
+        color: $text-primary;
+    }
+
+    &:disabled {
+        opacity: 0.2;
+        cursor: default;
+    }
+}
+
+.resetBtn {
+    border: 1px solid $border;
+    color: $text-muted;
+    font-size: 0.9rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+    background: none;
+    transition: border-color 0.1s, color 0.1s;
+
+    &:hover {
+        border-color: $checkmate-color;
+        color: $checkmate-color;
+    }
+}

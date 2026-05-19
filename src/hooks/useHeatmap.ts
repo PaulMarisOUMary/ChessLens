@@ -4,16 +4,9 @@ import { useStockfish } from "./useStockfish";
 import { getLegalMoves, isCheckmate } from "../utils/fen";
 import { normalizeScores } from "../utils/normalize";
 import { Chess } from "chess.js";
+import { MATE_SENTINEL_CP, GLOBAL_DEPTH_BONUS } from "../constants";
 
-interface UseHeatmap {
-  moveScores: MoveScore[];
-  globalScore: number | null;
-  isReady: boolean;
-  isAnalysing: boolean;
-  engineStatus: EngineStatus;
-  analyse: (fen: string, turn: Side, depth: number) => void;
-  clear: () => void;
-}
+const GLOBAL_LABEL = "__global__";
 
 interface QueueItem {
   type: "global" | "move";
@@ -29,7 +22,15 @@ interface RawScore {
   mateIn: number | null;
 }
 
-const GLOBAL_LABEL = "__global__";
+export interface UseHeatmap {
+  moveScores: MoveScore[];
+  globalScore: number | null;
+  isReady: boolean;
+  isAnalysing: boolean;
+  engineStatus: EngineStatus;
+  analyse: (fen: string, turn: Side, depth: number) => void;
+  clear: () => void;
+}
 
 export function useHeatmap(): UseHeatmap {
   const [moveScores, setMoveScores] = useState<MoveScore[]>([]);
@@ -98,7 +99,7 @@ export function useHeatmap(): UseHeatmap {
 
     if (item.type === "move" && item.isImmediateMate) {
       rawRef.current.set(item.moveLabel!, {
-        score: 9999,
+        score: MATE_SENTINEL_CP,
         isMate: true,
         mateIn: 1,
       });
@@ -106,8 +107,8 @@ export function useHeatmap(): UseHeatmap {
       return;
     }
 
-    const labelToUse = item.type === "global" ? GLOBAL_LABEL : item.moveLabel!;
-    engine.analyse(item.fen, item.depth, labelToUse);
+    const label = item.type === "global" ? GLOBAL_LABEL : item.moveLabel!;
+    engine.analyse(item.fen, item.depth, label);
   }, [engine]);
 
   useEffect(() => {
@@ -129,33 +130,30 @@ export function useHeatmap(): UseHeatmap {
 
       rawRef.current = new Map();
 
-      const queue: QueueItem[] = [];
-
-      queue.push({
-        type: "global",
-        fen,
-        depth: depth + 2,
-      });
-
-      moves.forEach((m) => {
-        const tmp = new Chess(fen);
-        try {
-          tmp.move({ from: m.from, to: m.to, promotion: m.promotion ?? "q" });
-          queue.push({
-            type: "move",
-            moveLabel: `${m.from}${m.to}${m.promotion ?? ""}`,
-            fen: tmp.fen(),
-            depth,
-            isImmediateMate: isCheckmate(tmp.fen()),
-          });
-        // eslint-disable-next-line no-empty
-        } catch { }
-      });
+      const queue: QueueItem[] = [
+        { type: "global", fen, depth: depth + GLOBAL_DEPTH_BONUS },
+        ...moves.flatMap((m): QueueItem[] => {
+          const tmp = new Chess(fen);
+          try {
+            tmp.move({ from: m.from, to: m.to, promotion: m.promotion ?? "q" });
+            return [
+              {
+                type: "move",
+                moveLabel: `${m.from}${m.to}${m.promotion ?? ""}`,
+                fen: tmp.fen(),
+                depth,
+                isImmediateMate: isCheckmate(tmp.fen()),
+              },
+            ];
+          } catch {
+            return [];
+          }
+        }),
+      ];
 
       queueRef.current = queue;
       setIsAnalysing(true);
       setEngineStatus("analysing");
-
       processNext();
     },
     [isReady, engine, processNext],

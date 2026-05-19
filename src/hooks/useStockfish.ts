@@ -10,23 +10,24 @@ type ScoreHandler = (
 type BestmoveHandler = (moveLabel: string) => void;
 type ReadyHandler = () => void;
 
-interface UseStockfish {
-  analyse: (fen: string, depth: number, moveLabel: string) => void;
-  stop: () => void;
-}
-
-interface Options {
+export interface UseStockfishOptions {
   onReady: ReadyHandler;
   onScore: ScoreHandler;
   onBestmove: BestmoveHandler;
+}
+
+export interface UseStockfish {
+  analyse: (fen: string, depth: number, moveLabel: string) => void;
+  stop: () => void;
 }
 
 export function useStockfish({
   onReady,
   onScore,
   onBestmove,
-}: Options): UseStockfish {
+}: UseStockfishOptions): UseStockfish {
   const workerRef = useRef<Worker | null>(null);
+
   const onReadyRef = useRef(onReady);
   const onScoreRef = useRef(onScore);
   const onBestmoveRef = useRef(onBestmove);
