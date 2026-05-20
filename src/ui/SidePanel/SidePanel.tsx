@@ -25,11 +25,13 @@ export interface SidePanelProps {
   turn: Side;
   boardHeight: number;
   displayDepth: number;
+  isFlipped: boolean;
   onGoToPly: (ply: number) => void;
   onReset: () => void;
   onSetDepth: (v: number) => void;
   onSetHeatmapEnabled: (v: boolean) => void;
   onSetHeatmapOpacity: (v: number) => void;
+  onFlipBoard: () => void;
 }
 
 function statusLabel(status: GameStatus, turn: Side): string {
@@ -61,11 +63,13 @@ export function SidePanel({
   turn,
   boardHeight,
   displayDepth,
+  isFlipped,
   onGoToPly,
   onReset,
   onSetDepth,
   onSetHeatmapEnabled,
   onSetHeatmapOpacity,
+  onFlipBoard,
 }: SidePanelProps) {
   return (
     <aside className={styles.panel} style={{ height: boardHeight }}>
@@ -113,9 +117,11 @@ export function SidePanel({
         <SettingsPanel
           settings={settings}
           displayDepth={displayDepth}
+          isFlipped={isFlipped}
           onSetDepth={onSetDepth}
           onSetHeatmapEnabled={onSetHeatmapEnabled}
           onSetHeatmapOpacity={onSetHeatmapOpacity}
+          onFlipBoard={onFlipBoard}
         />
       </div>
     </aside>

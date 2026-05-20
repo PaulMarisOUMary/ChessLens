@@ -34,6 +34,7 @@ export function Board() {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotion | null>(null);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   const chessRef = useRef(chess);
   const heatmapRef = useRef(heatmap);
@@ -160,6 +161,7 @@ export function Board() {
           <Chessboard
             options={{
               position: chess.fen,
+              boardOrientation: isFlipped ? "black" : "white",
               onPieceDrop: onDrop,
               onSquareClick,
               lightSquareStyle: { backgroundColor: "#c9c9c9" },
@@ -175,6 +177,7 @@ export function Board() {
               boardWidth={boardWidth}
               mode={selectedSquare ? "destination" : "source"}
               opacity={settings.heatmapOpacity}
+              boardFlipped={isFlipped}
             />
           )}
 
@@ -187,6 +190,7 @@ export function Board() {
               fromSquare={pendingPromotion.from}
               boardWidth={boardWidth}
               moveScores={heatmap.moveScores}
+              boardFlipped={isFlipped}
               onSelect={onPromotionSelect}
             />
           )}
@@ -204,12 +208,14 @@ export function Board() {
           status={chess.status}
           turn={chess.turn}
           boardHeight={boardWidth}
+          displayDepth={displayDepth}
+          isFlipped={isFlipped}
           onGoToPly={chess.goToPly}
           onReset={chess.reset}
           onSetDepth={setDepth}
           onSetHeatmapEnabled={setHeatmapEnabled}
           onSetHeatmapOpacity={setHeatmapOpacity}
-          displayDepth={displayDepth}
+          onFlipBoard={() => setIsFlipped((f) => !f)}
         />
       </div>
     </div>

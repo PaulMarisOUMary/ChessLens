@@ -11,6 +11,7 @@ export interface HeatLayerProps {
   boardWidth: number;
   mode: HeatmapMode;
   opacity: number;
+  boardFlipped?: boolean;
 }
 
 interface SquareData {
@@ -60,6 +61,7 @@ export function HeatLayer({
   boardWidth,
   mode,
   opacity,
+  boardFlipped = false,
 }: HeatLayerProps) {
   const squareSize = boardWidth / 8;
 
@@ -76,6 +78,7 @@ export function HeatLayer({
           squareSize={squareSize}
           mode={mode}
           opacity={opacity}
+          boardFlipped={boardFlipped}
           {...sq}
         />
       ))}
@@ -87,6 +90,7 @@ interface HeatSquareProps extends SquareData {
   squareSize: number;
   mode: HeatmapMode;
   opacity: number;
+  boardFlipped: boolean;
 }
 
 function HeatSquare({
@@ -98,9 +102,12 @@ function HeatSquare({
   squareSize,
   mode,
   opacity,
+  boardFlipped,
 }: HeatSquareProps) {
-  const file = square.charCodeAt(0) - "a".charCodeAt(0);
-  const rank = 8 - parseInt(square[1], 10);
+  const fileIdx = square.charCodeAt(0) - "a".charCodeAt(0);
+  const rankIdx = 8 - parseInt(square[1], 10);
+  const file = boardFlipped ? 7 - fileIdx : fileIdx;
+  const rank = boardFlipped ? 7 - rankIdx : rankIdx;
 
   const bgColor =
     kind === "mate-good"

@@ -5,17 +5,21 @@ import styles from "./SettingsPanel.module.scss";
 export interface SettingsPanelProps {
   settings: Settings;
   displayDepth: number;
+  isFlipped: boolean;
   onSetDepth: (v: number) => void;
   onSetHeatmapEnabled: (v: boolean) => void;
   onSetHeatmapOpacity: (v: number) => void;
+  onFlipBoard: () => void;
 }
 
 export function SettingsPanel({
   settings,
   displayDepth,
+  isFlipped,
   onSetDepth,
   onSetHeatmapEnabled,
   onSetHeatmapOpacity,
+  onFlipBoard,
 }: SettingsPanelProps) {
   return (
     <div className={styles.panel}>
@@ -60,6 +64,17 @@ export function SettingsPanel({
           onChange={(e) => onSetHeatmapOpacity(Number(e.target.value) / 100)}
           aria-label="Heatmap opacity"
         />
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.label}>Orientation</span>
+        <button
+          className={`${styles.toggle} ${isFlipped ? styles.on : ""}`}
+          onClick={onFlipBoard}
+          aria-pressed={isFlipped}
+        >
+          {isFlipped ? "BLACK" : "WHITE"}
+        </button>
       </div>
     </div>
   );
