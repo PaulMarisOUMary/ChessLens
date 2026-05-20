@@ -25,7 +25,7 @@ export function RewindControls({
         title="Start"
         aria-label="Go to start"
       >
-        ⏮
+        {"<<"}
       </button>
       <button
         className={styles.btn}
@@ -34,7 +34,7 @@ export function RewindControls({
         title="Previous"
         aria-label="Previous move"
       >
-        ◀
+        {"<"}
       </button>
       <button
         className={styles.btn}
@@ -43,7 +43,7 @@ export function RewindControls({
         title="Next"
         aria-label="Next move"
       >
-        ▶
+        {">"}
       </button>
       <button
         className={styles.btn}
@@ -52,7 +52,7 @@ export function RewindControls({
         title="End"
         aria-label="Go to end"
       >
-        ⏭
+        {">>"}
       </button>
       <button
         className={styles.resetBtn}
