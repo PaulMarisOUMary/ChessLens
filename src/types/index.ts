@@ -32,6 +32,10 @@ export interface MoveScore {
 export type HeatmapMode = "source" | "destination";
 
 
+export const PROMOTION_PIECES = ["q", "r", "b", "n"] as const;
+export type PromotionPiece = (typeof PROMOTION_PIECES)[number];
+
+
 export type GameStatus =
   | "playing"
   | "check"

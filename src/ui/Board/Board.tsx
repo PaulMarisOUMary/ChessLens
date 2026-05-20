@@ -9,7 +9,15 @@ import { useBoardResize } from "../../hooks/useBoardResize";
 
 import { HeatLayer } from "../HeatLayer/HeatLayer";
 import { SidePanel } from "../SidePanel/SidePanel";
+import { PromotionPicker } from "../PromotionPicker/PromotionPicker";
+import { isPromotionMove } from "../../utils/fen";
 import styles from "./Board.module.scss";
+import type { PromotionPiece } from "../../types";
+
+interface PendingPromotion {
+  from: string;
+  to: string;
+}
 
 export function Board() {
   const chess = useChessGame();
@@ -24,6 +32,8 @@ export function Board() {
   const { boardWidth, isMobile } = useBoardResize();
 
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+  const [pendingPromotion, setPendingPromotion] =
+    useState<PendingPromotion | null>(null);
 
   const chessRef = useRef(chess);
   const heatmapRef = useRef(heatmap);
@@ -59,29 +69,45 @@ export function Board() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedSquare(null);
+    setPendingPromotion(null);
   }, [chess.fen]);
+
+  const attemptMove = useCallback((from: string, to: string): boolean => {
+    const { isGameOver, isRewinding, makeMove, fen } = chessRef.current;
+    if (isGameOver || isRewinding) return false;
+
+    if (isPromotionMove(fen, from, to)) {
+      setPendingPromotion({ from, to });
+      return true;
+    }
+
+    const ok = makeMove(from, to);
+    if (ok) {
+      heatmapRef.current.clear();
+      setSelectedSquare(null);
+    }
+    return ok;
+  }, []);
 
   const onDrop = useCallback(
     ({ sourceSquare, targetSquare }: PieceDropHandlerArgs): boolean => {
-      const { isGameOver, isRewinding, makeMove } = chessRef.current;
-      if (isGameOver || isRewinding || !targetSquare) return false;
-
-      const ok = makeMove(sourceSquare, targetSquare);
-      if (ok) {
-        heatmapRef.current.clear();
-        setSelectedSquare(null);
-      }
-      return ok;
+      if (!targetSquare) return false;
+      return attemptMove(sourceSquare, targetSquare);
     },
-    [],
+    [attemptMove],
   );
 
   const onSquareClick = useCallback(
     ({ square }: SquareHandlerArgs) => {
-      const { isGameOver, isRewinding, makeMove, getLegalMoves } =
-        chessRef.current;
+      const { isGameOver, isRewinding, getLegalMoves } = chessRef.current;
 
       if (isGameOver || isRewinding) return;
+
+      if (pendingPromotion) {
+        setPendingPromotion(null);
+        setSelectedSquare(null);
+        return;
+      }
 
       if (selectedSquare === square) {
         setSelectedSquare(null);
@@ -89,12 +115,8 @@ export function Board() {
       }
 
       if (selectedSquare) {
-        const ok = makeMove(selectedSquare, square);
-        if (ok) {
-          heatmapRef.current.clear();
-          setSelectedSquare(null);
-          return;
-        }
+        const moved = attemptMove(selectedSquare, square);
+        if (moved) return;
       }
 
       if (getLegalMoves(square).length > 0) {
@@ -103,7 +125,23 @@ export function Board() {
         setSelectedSquare(null);
       }
     },
-    [selectedSquare],
+    [selectedSquare, pendingPromotion, attemptMove],
+  );
+
+  const onPromotionSelect = useCallback(
+    (piece: PromotionPiece | null) => {
+      if (piece && pendingPromotion) {
+        const ok = chessRef.current.makeMove(
+          pendingPromotion.from,
+          pendingPromotion.to,
+          piece,
+        );
+        if (ok) heatmapRef.current.clear();
+      }
+      setPendingPromotion(null);
+      setSelectedSquare(null);
+    },
+    [pendingPromotion],
   );
 
   const displayScores = selectedSquare
@@ -141,6 +179,17 @@ export function Board() {
           )}
 
           {heatmap.isAnalysing && <div className={styles.analysing} />}
+
+          {pendingPromotion && (
+            <PromotionPicker
+              side={chess.turn}
+              targetSquare={pendingPromotion.to}
+              fromSquare={pendingPromotion.from}
+              boardWidth={boardWidth}
+              moveScores={heatmap.moveScores}
+              onSelect={onPromotionSelect}
+            />
+          )}
         </div>
 
         <SidePanel

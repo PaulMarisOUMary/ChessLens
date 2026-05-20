@@ -6,3 +6,4 @@ export { MoveHistory } from "./MoveHistory/MoveHistory";
 export { RewindControls } from "./RewindControls/RewindControls";
 export { EngineStatusBar } from "./EngineStatusBar/EngineStatusBar";
 export { SettingsPanel } from "./SettingsPanel/SettingsPanel";
+export { PromotionPicker } from "./PromotionPicker/PromotionPicker";

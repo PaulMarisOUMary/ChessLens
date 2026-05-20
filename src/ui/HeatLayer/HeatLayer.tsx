@@ -38,14 +38,21 @@ function getBestScorePerSource(scores: MoveScore[]): SquareData[] {
   }));
 }
 
-function toSquareData(s: MoveScore): SquareData {
-  return {
+function getBestScorePerDestination(scores: MoveScore[]): SquareData[] {
+  const map = new Map<string, MoveScore>();
+  for (const s of scores) {
+    const current = map.get(s.to);
+    if (!current || s.normalizedScore > current.normalizedScore) {
+      map.set(s.to, s);
+    }
+  }
+  return Array.from(map.values()).map((s) => ({
     square: s.to,
     normalizedScore: s.normalizedScore,
     rawScore: s.score,
     kind: s.kind,
     mateIn: s.mateIn,
-  };
+  }));
 }
 
 export function HeatLayer({
@@ -59,7 +66,7 @@ export function HeatLayer({
   const squares: SquareData[] =
     mode === "source"
       ? getBestScorePerSource(moveScores)
-      : moveScores.map(toSquareData);
+      : getBestScorePerDestination(moveScores);
 
   return (
     <div className={styles.layer}>

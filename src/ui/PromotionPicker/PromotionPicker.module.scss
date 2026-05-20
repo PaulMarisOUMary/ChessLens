@@ -1,0 +1,77 @@
+@use '../../styles/abstracts' as *;
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 30;
+    cursor: default;
+}
+
+.picker {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    z-index: 31;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-bottom: 1px solid $border-subtle;
+    cursor: pointer;
+    background: $surface-1;
+    transition: background 0.12s ease;
+    overflow: hidden;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: $surface-3;
+    }
+
+    &:active {
+        background: $surface-2;
+        transform: scale(0.96);
+    }
+
+    >svg {
+        width: 75%;
+        height: 75%;
+        display: block;
+        pointer-events: none;
+        flex-shrink: 0;
+    }
+}
+
+.tag {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+    width: 36%;
+    height: 36%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.25s ease;
+    pointer-events: none;
+}
+
+.tagLabel {
+    @include mono;
+    font-size: 0.48rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    line-height: 1;
+    user-select: none;
+}

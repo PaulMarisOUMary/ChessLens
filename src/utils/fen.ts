@@ -35,6 +35,16 @@ export function isCheckmate(fen: string): boolean {
   return new Chess(fen).isCheckmate();
 }
 
+export function isPromotionMove(
+  fen: string,
+  from: string,
+  to: string,
+): boolean {
+  const game = new Chess(fen);
+  const moves = game.moves({ square: from as Square, verbose: true });
+  return moves.some((m) => m.to === to && m.flags.includes("p"));
+}
+
 export function getTurn(fen: string): Side {
   return new Chess(fen).turn() as Side;
 }
