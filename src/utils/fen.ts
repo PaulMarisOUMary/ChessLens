@@ -4,6 +4,25 @@ import type { Side, GameStatus } from "../types";
 
 export const INITIAL_FEN = new Chess().fen();
 
+function safeChess(fen: string): Chess {
+  const game = new Chess();
+  try {
+    game.load(fen, { skipValidation: true });
+  } catch {
+    game.load(INITIAL_FEN);
+  }
+  return game;
+}
+
+export function isFenPlayable(fen: string): boolean {
+  try {
+    new Chess(fen);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function getGameStatus(game: Chess): GameStatus {
   if (game.isCheckmate()) return "checkmate";
   if (game.isStalemate()) return "stalemate";
@@ -13,6 +32,7 @@ export function getGameStatus(game: Chess): GameStatus {
 }
 
 export function getLegalDestinations(fen: string, square: string): string[] {
+  if (!isFenPlayable(fen)) return [];
   const game = new Chess(fen);
   return game
     .moves({ square: square as Square, verbose: true })
@@ -22,6 +42,7 @@ export function getLegalDestinations(fen: string, square: string): string[] {
 export function getLegalMoves(
   fen: string,
 ): Array<{ from: string; to: string; san: string; promotion?: string }> {
+  if (!isFenPlayable(fen)) return [];
   const game = new Chess(fen);
   return game.moves({ verbose: true }).map((m) => ({
     from: m.from,
@@ -32,6 +53,7 @@ export function getLegalMoves(
 }
 
 export function isCheckmate(fen: string): boolean {
+  if (!isFenPlayable(fen)) return false;
   return new Chess(fen).isCheckmate();
 }
 
@@ -40,11 +62,12 @@ export function isPromotionMove(
   from: string,
   to: string,
 ): boolean {
+  if (!isFenPlayable(fen)) return false;
   const game = new Chess(fen);
   const moves = game.moves({ square: from as Square, verbose: true });
   return moves.some((m) => m.to === to && m.flags.includes("p"));
 }
 
 export function getTurn(fen: string): Side {
-  return new Chess(fen).turn() as Side;
+  return safeChess(fen).turn() as Side;
 }

@@ -16,6 +16,7 @@ export interface UseChessGame {
   getLegalMoves: (square: string) => string[];
   goToPly: (ply: number) => void;
   reset: () => void;
+  loadFen: (fen: string) => void;
 }
 
 export function useChessGame(): UseChessGame {
@@ -102,6 +103,29 @@ export function useChessGame(): UseChessGame {
     syncFromGame(gameRef.current);
   }, [syncFromGame]);
 
+  const loadFen = useCallback(
+    (newFen: string) => {
+      let game: Chess;
+      try {
+        game = new Chess(newFen);
+      } catch {
+        try {
+          game = new Chess();
+          game.load(newFen, { skipValidation: true });
+        } catch {
+          return;
+        }
+      }
+      gameRef.current = game;
+      historyRef.current = [];
+      setHistory([]);
+      setHistoryLength(0);
+      setActivePly(0);
+      syncFromGame(game);
+    },
+    [syncFromGame],
+  );
+
   return {
     fen,
     turn,
@@ -114,5 +138,6 @@ export function useChessGame(): UseChessGame {
     getLegalMoves,
     goToPly,
     reset,
+    loadFen,
   };
 }

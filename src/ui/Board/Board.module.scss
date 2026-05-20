@@ -58,3 +58,19 @@
         transform: translateX(100%);
     }
 }
+
+.cursorErase {
+    cursor: cell;
+}
+
+.cursorPlace {
+    cursor: copy;
+}
+
+.cursorGrab {
+    cursor: grab;
+}
+
+.cursorDefault {
+    cursor: default;
+}

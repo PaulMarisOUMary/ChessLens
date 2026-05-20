@@ -16,7 +16,6 @@ export type WorkerOutMessage =
     }
   | { type: "bestmove"; moveLabel: string };
 
-
 export type ScoreKind = "normal" | "mate-good" | "mate-bad";
 
 export interface MoveScore {
@@ -53,7 +52,6 @@ export interface HistoryEntry {
   ply: number;
 }
 
-
 export interface Settings {
   depth: number;
   heatmapEnabled: boolean;
@@ -64,4 +62,9 @@ export const DEFAULT_SETTINGS: Settings = {
   depth: 10,
   heatmapEnabled: true,
   heatmapOpacity: 0.75,
+};
+
+export type EditablePiece = {
+  type: "p" | "n" | "b" | "r" | "q" | "k";
+  color: "w" | "b";
 };

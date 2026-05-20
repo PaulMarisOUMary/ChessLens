@@ -1,0 +1,247 @@
+@use '../../styles/abstracts' as *;
+
+.panel {
+    width: 280px;
+    min-width: 260px;
+    background: $surface-1;
+    border-right: 1px solid $border;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+        width: 100%;
+        height: auto !important;
+        border-right: none;
+        border-bottom: 1px solid $border;
+    }
+}
+
+.indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $border-subtle;
+    min-height: 52px;
+    flex-shrink: 0;
+}
+
+.indicatorIcon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $surface-3;
+    border-radius: 3px;
+    flex-shrink: 0;
+
+    >svg {
+        width: 26px;
+        height: 26px;
+        display: block;
+    }
+}
+
+.indicatorEraseIcon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $surface-3;
+    border-radius: 3px;
+    flex-shrink: 0;
+    font-size: 1rem;
+    color: $checkmate-color;
+}
+
+.indicatorLabel {
+    @include mono;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: $text-secondary;
+    letter-spacing: 0.03em;
+}
+
+.hint {
+    @include mono;
+    font-size: 0.56rem;
+    color: $text-secondary;
+    line-height: 1.4;
+    padding: 0.4rem 1rem;
+    border-bottom: 1px solid $border-subtle;
+    flex-shrink: 0;
+}
+
+.gridWrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0;
+    overflow: hidden;
+}
+
+.grid {
+    display: flex;
+    gap: 0;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &:first-child {
+        border-right: 1px solid $border-subtle;
+    }
+}
+
+.colLabel {
+    @include mono;
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: $text-muted;
+    padding: 0.25rem 0;
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid $border-subtle;
+}
+
+.cell {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-bottom: 1px solid $border-subtle;
+    background: $surface-1;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.1s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    >svg {
+        width: 76%;
+        height: 76%;
+        display: block;
+        pointer-events: none;
+    }
+
+    &:hover {
+        background: $surface-3;
+    }
+
+    &.active {
+        background: $surface-2;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 2px solid $accent-dim;
+            pointer-events: none;
+        }
+    }
+}
+
+.actions {
+    border-top: 1px solid $border-subtle;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex-shrink: 0;
+}
+
+.actionBtn {
+    width: 100%;
+    padding: 0.55rem 1rem;
+    border: none;
+    border-bottom: 1px solid $border-subtle;
+    background: transparent;
+    color: $text-secondary;
+    font-size: 0.65rem;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.1s ease, color 0.1s ease;
+    letter-spacing: 0.02em;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: $surface-3;
+        color: $text-primary;
+    }
+
+    &.eraseActive {
+        color: $checkmate-color;
+        background: rgba($checkmate-color, 0.08);
+
+        &:hover {
+            background: rgba($checkmate-color, 0.14);
+        }
+    }
+}
+
+.turnRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 1rem;
+    border-top: 1px solid $border-subtle;
+    flex-shrink: 0;
+}
+
+.turnLabel {
+    @include mono;
+    font-size: 0.65rem;
+    color: $text-secondary;
+    letter-spacing: 0.03em;
+}
+
+.turnToggle {
+    display: flex;
+    border: 1px solid $border;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.turnBtn {
+    padding: 0.3rem 0.7rem;
+    border: none;
+    background: transparent;
+    color: $text-muted;
+    font-size: 0.6rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.1s ease, color 0.1s ease;
+    letter-spacing: 0.02em;
+
+    &:first-child {
+        border-right: 1px solid $border;
+    }
+
+    &:hover {
+        background: $surface-3;
+        color: $text-secondary;
+    }
+
+    &.turnActive {
+        background: $surface-3;
+        color: $text-primary;
+        font-weight: 600;
+    }
+}

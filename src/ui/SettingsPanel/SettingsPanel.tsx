@@ -6,20 +6,24 @@ export interface SettingsPanelProps {
   settings: Settings;
   displayDepth: number;
   isFlipped: boolean;
+  isEditMode: boolean;
   onSetDepth: (v: number) => void;
   onSetHeatmapEnabled: (v: boolean) => void;
   onSetHeatmapOpacity: (v: number) => void;
   onFlipBoard: () => void;
+  onToggleEditMode: () => void;
 }
 
 export function SettingsPanel({
   settings,
   displayDepth,
   isFlipped,
+  isEditMode,
   onSetDepth,
   onSetHeatmapEnabled,
   onSetHeatmapOpacity,
   onFlipBoard,
+  onToggleEditMode,
 }: SettingsPanelProps) {
   return (
     <div className={styles.panel}>
@@ -74,6 +78,17 @@ export function SettingsPanel({
           aria-pressed={isFlipped}
         >
           {isFlipped ? "BLACK" : "WHITE"}
+        </button>
+      </div>
+
+      <div className={styles.row}>
+        <span className={styles.label}>Edit board</span>
+        <button
+          className={`${styles.toggle} ${isEditMode ? styles.on : ""}`}
+          onClick={onToggleEditMode}
+          aria-pressed={isEditMode}
+        >
+          {isEditMode ? "ON" : "OFF"}
         </button>
       </div>
     </div>

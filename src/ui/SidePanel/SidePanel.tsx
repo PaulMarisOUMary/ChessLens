@@ -26,15 +26,22 @@ export interface SidePanelProps {
   boardHeight: number;
   displayDepth: number;
   isFlipped: boolean;
+  isEditMode: boolean;
   onGoToPly: (ply: number) => void;
   onReset: () => void;
   onSetDepth: (v: number) => void;
   onSetHeatmapEnabled: (v: boolean) => void;
   onSetHeatmapOpacity: (v: number) => void;
   onFlipBoard: () => void;
+  onToggleEditMode: () => void;
 }
 
-function statusLabel(status: GameStatus, turn: Side): string {
+function statusLabel(
+  status: GameStatus,
+  turn: Side,
+  isEditMode: boolean,
+): string {
+  if (isEditMode) return "Edit mode";
   const side = turn === "w" ? "White" : "Black";
   const other = turn === "w" ? "Black" : "White";
   switch (status) {
@@ -64,21 +71,29 @@ export function SidePanel({
   boardHeight,
   displayDepth,
   isFlipped,
+  isEditMode,
   onGoToPly,
   onReset,
   onSetDepth,
   onSetHeatmapEnabled,
   onSetHeatmapOpacity,
   onFlipBoard,
+  onToggleEditMode,
 }: SidePanelProps) {
   return (
     <aside className={styles.panel} style={{ height: boardHeight }}>
       <div className={styles.statusRow}>
-        <span className={`${styles.statusDot} ${styles[status]}`} />
-        <span className={`${styles.statusText} ${styles[status]}`}>
-          {statusLabel(status, turn)}
+        <span
+          className={`${styles.statusDot} ${isEditMode ? styles.edit : styles[status]}`}
+        />
+        <span
+          className={`${styles.statusText} ${isEditMode ? styles.edit : styles[status]}`}
+        >
+          {statusLabel(status, turn, isEditMode)}
         </span>
-        {isRewinding && <span className={styles.rewindBadge}>rewind</span>}
+        {isRewinding && !isEditMode && (
+          <span className={styles.rewindBadge}>rewind</span>
+        )}
       </div>
 
       <div className={styles.section}>
@@ -118,10 +133,12 @@ export function SidePanel({
           settings={settings}
           displayDepth={displayDepth}
           isFlipped={isFlipped}
+          isEditMode={isEditMode}
           onSetDepth={onSetDepth}
           onSetHeatmapEnabled={onSetHeatmapEnabled}
           onSetHeatmapOpacity={onSetHeatmapOpacity}
           onFlipBoard={onFlipBoard}
+          onToggleEditMode={onToggleEditMode}
         />
       </div>
     </aside>
