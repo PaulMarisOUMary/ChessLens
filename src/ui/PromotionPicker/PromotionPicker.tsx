@@ -6,6 +6,7 @@ import {
   MATE_GOOD_COLOR,
   MATE_BAD_COLOR,
 } from "../../utils/color";
+import { formatScoreLabel } from "../../utils/score";
 import styles from "./PromotionPicker.module.scss";
 
 const PIECE_LABELS: Record<PromotionPiece, string> = {
@@ -25,15 +26,7 @@ function ScoreBadge({ score }: { score: MoveScore }) {
         ? MATE_BAD_COLOR(0.92)
         : scoreToColor(normalizedScore, 0.92);
 
-  const displayScore = rawScore / 100;
-  const label =
-    kind === "mate-good"
-      ? mateIn === 1
-        ? "M1"
-        : `M${mateIn}`
-      : kind === "mate-bad"
-        ? "✕"
-        : (displayScore >= 0 ? "+" : "") + displayScore.toFixed(1);
+  const label = formatScoreLabel(rawScore, kind, mateIn);
 
   return (
     <div className={styles.tag} style={{ backgroundColor: bgColor }}>
@@ -42,23 +35,22 @@ function ScoreBadge({ score }: { score: MoveScore }) {
   );
 }
 
-interface PromotionPickerProps {
-  side: Side;
-  targetSquare: string;
-  boardWidth: number;
-
-  moveScores: MoveScore[];
-  fromSquare: string;
-  boardFlipped?: boolean;
-  onSelect: (piece: PromotionPiece | null) => void;
-}
-
 function fileToCol(file: string): number {
   return file.charCodeAt(0) - "a".charCodeAt(0);
 }
 
 function rankToRow(rank: string): number {
   return 8 - parseInt(rank, 10);
+}
+
+interface PromotionPickerProps {
+  side: Side;
+  targetSquare: string;
+  boardWidth: number;
+  moveScores: MoveScore[];
+  fromSquare: string;
+  boardFlipped?: boolean;
+  onSelect: (piece: PromotionPiece | null) => void;
 }
 
 export function PromotionPicker({
@@ -106,7 +98,6 @@ export function PromotionPicker({
         onClick={() => onSelect(null)}
         aria-label="Cancel promotion"
       />
-
       <div
         className={styles.picker}
         style={{ left, top, width: cellSize, height: cellSize * 4 }}
@@ -114,8 +105,7 @@ export function PromotionPicker({
         role="listbox"
       >
         {PROMOTION_PIECES.map((p) => {
-          const pieceKey =
-            `${side}${p.toUpperCase()}` as keyof typeof defaultPieces;
+          const pieceKey = `${side}${p.toUpperCase()}` as keyof typeof defaultPieces;
           const PieceSvg = defaultPieces[pieceKey];
           const score = scoreByPiece.get(p);
 

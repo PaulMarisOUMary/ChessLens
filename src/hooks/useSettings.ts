@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import type { Settings } from "../types";
-import { DEFAULT_SETTINGS } from "../types";
+import { DEFAULT_SETTINGS } from "../constants";
 import {
   DEPTH_MIN,
   DEPTH_MAX,

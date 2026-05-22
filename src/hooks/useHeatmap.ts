@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import type { EngineStatus, MoveScore, Side } from "../types";
 import { useStockfish } from "./useStockfish";
 import { getLegalMoves, isCheckmate } from "../utils/fen";
-import { normalizeScores } from "../utils/normalize";
+import { normalizeScores } from "../utils/score";
 import { Chess } from "chess.js";
 import { MATE_SENTINEL_CP, GLOBAL_DEPTH_BONUS } from "../constants";
 
@@ -20,6 +20,11 @@ interface RawScore {
   score: number;
   isMate: boolean;
   mateIn: number | null;
+}
+
+interface PendingRequest {
+  fen: string;
+  depth: number;
 }
 
 export interface UseHeatmap {
@@ -42,8 +47,8 @@ export function useHeatmap(): UseHeatmap {
   const queueRef = useRef<QueueItem[]>([]);
   const rawRef = useRef<Map<string, RawScore>>(new Map());
   const isMounted = useRef<boolean>(true);
-
   const processNextRef = useRef<() => void>(() => {});
+  const pendingRequestRef = useRef<PendingRequest | null>(null);
 
   const onReady = useCallback(() => {
     setIsReady(true);
@@ -82,6 +87,47 @@ export function useHeatmap(): UseHeatmap {
   const processNext = useCallback(() => {
     if (!isMounted.current) return;
 
+    if (pendingRequestRef.current) {
+      const { fen, depth } = pendingRequestRef.current;
+      pendingRequestRef.current = null;
+
+      rawRef.current = new Map();
+      const moves = getLegalMoves(fen);
+
+      if (moves.length === 0) {
+        setGlobalScore(null);
+        setMoveScores([]);
+        setIsAnalysing(false);
+        setEngineStatus("ready");
+        return;
+      }
+
+      const queue: QueueItem[] = [
+        { type: "global", fen, depth: depth + GLOBAL_DEPTH_BONUS },
+        ...moves.flatMap((m): QueueItem[] => {
+          const tmp = new Chess(fen);
+          try {
+            tmp.move({ from: m.from, to: m.to, promotion: m.promotion ?? "q" });
+            return [
+              {
+                type: "move",
+                moveLabel: `${m.from}${m.to}${m.promotion ?? ""}`,
+                fen: tmp.fen(),
+                depth,
+                isImmediateMate: isCheckmate(tmp.fen()),
+              },
+            ];
+          } catch {
+            return [];
+          }
+        }),
+      ];
+
+      queueRef.current = queue;
+      setIsAnalysing(true);
+      setEngineStatus("analysing");
+    }
+
     const item = queueRef.current.shift();
 
     if (!item) {
@@ -119,7 +165,14 @@ export function useHeatmap(): UseHeatmap {
     (fen: string, _turn: Side, depth: number) => {
       if (!isReady) return;
 
-      engine.stop();
+      if (isAnalysing) {
+        pendingRequestRef.current = { fen, depth };
+        setMoveScores([]);
+        engine.stop();
+        return;
+      }
+
+      rawRef.current = new Map();
       setMoveScores([]);
 
       const moves = getLegalMoves(fen);
@@ -127,8 +180,6 @@ export function useHeatmap(): UseHeatmap {
         setGlobalScore(null);
         return;
       }
-
-      rawRef.current = new Map();
 
       const queue: QueueItem[] = [
         { type: "global", fen, depth: depth + GLOBAL_DEPTH_BONUS },
@@ -156,10 +207,11 @@ export function useHeatmap(): UseHeatmap {
       setEngineStatus("analysing");
       processNext();
     },
-    [isReady, engine, processNext],
+    [isReady, isAnalysing, engine, processNext],
   );
 
   const clear = useCallback(() => {
+    pendingRequestRef.current = null;
     engine.stop();
     queueRef.current = [];
     rawRef.current = new Map();

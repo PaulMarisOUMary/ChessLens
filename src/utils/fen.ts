@@ -31,6 +31,15 @@ export function getGameStatus(game: Chess): GameStatus {
   return "playing";
 }
 
+export function getTurn(fen: string): Side {
+  return safeChess(fen).turn() as Side;
+}
+
+export function isCheckmate(fen: string): boolean {
+  if (!isFenPlayable(fen)) return false;
+  return new Chess(fen).isCheckmate();
+}
+
 export function getLegalDestinations(fen: string, square: string): string[] {
   if (!isFenPlayable(fen)) return [];
   const game = new Chess(fen);
@@ -52,11 +61,6 @@ export function getLegalMoves(
   }));
 }
 
-export function isCheckmate(fen: string): boolean {
-  if (!isFenPlayable(fen)) return false;
-  return new Chess(fen).isCheckmate();
-}
-
 export function isPromotionMove(
   fen: string,
   from: string,
@@ -68,6 +72,15 @@ export function isPromotionMove(
   return moves.some((m) => m.to === to && m.flags.includes("p"));
 }
 
-export function getTurn(fen: string): Side {
-  return safeChess(fen).turn() as Side;
+export function sanitizeFen(fen: string): string {
+  const parts = fen.split(" ");
+  parts[2] = "-";
+  parts[3] = "-";
+  return parts.join(" ");
+}
+
+export function setFenTurn(fen: string, turn: "w" | "b"): string {
+  const parts = fen.split(" ");
+  parts[1] = turn;
+  return parts.join(" ");
 }

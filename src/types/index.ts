@@ -30,10 +30,8 @@ export interface MoveScore {
 
 export type HeatmapMode = "source" | "destination";
 
-
 export const PROMOTION_PIECES = ["q", "r", "b", "n"] as const;
 export type PromotionPiece = (typeof PROMOTION_PIECES)[number];
-
 
 export type GameStatus =
   | "playing"
@@ -52,19 +50,13 @@ export interface HistoryEntry {
   ply: number;
 }
 
+export type EditablePiece = {
+  type: "p" | "n" | "b" | "r" | "q" | "k";
+  color: "w" | "b";
+};
+
 export interface Settings {
   depth: number;
   heatmapEnabled: boolean;
   heatmapOpacity: number;
 }
-
-export const DEFAULT_SETTINGS: Settings = {
-  depth: 10,
-  heatmapEnabled: true,
-  heatmapOpacity: 0.75,
-};
-
-export type EditablePiece = {
-  type: "p" | "n" | "b" | "r" | "q" | "k";
-  color: "w" | "b";
-};

@@ -1,5 +1,21 @@
-import type { MoveScore, ScoreKind } from "../types";
+import type { ScoreKind } from "../types";
 import { MATE_SENTINEL_CP } from "../constants";
+
+
+export function formatScoreLabel(
+  rawScore: number,
+  kind: ScoreKind,
+  mateIn: number | null,
+): string {
+  if (kind === "mate-good") {
+    return mateIn === 1 ? "M1" : `M${mateIn}`;
+  }
+  if (kind === "mate-bad") {
+    return "✕";
+  }
+  const pawns = rawScore / 100;
+  return (pawns >= 0 ? "+" : "") + pawns.toFixed(1);
+}
 
 interface RawScore {
   move: string;
@@ -10,7 +26,17 @@ interface RawScore {
   mateIn: number | null;
 }
 
-export function normalizeScores(raw: RawScore[]): MoveScore[] {
+export interface NormalizedScore {
+  move: string;
+  from: string;
+  to: string;
+  score: number;
+  normalizedScore: number;
+  kind: ScoreKind;
+  mateIn: number | null;
+}
+
+export function normalizeScores(raw: RawScore[]): NormalizedScore[] {
   if (raw.length === 0) return [];
 
   const normal = raw.filter((s) => !s.isMate);
@@ -21,7 +47,7 @@ export function normalizeScores(raw: RawScore[]): MoveScore[] {
   const min = values.length > 0 ? Math.min(...values) : 0;
   const range = max - min;
 
-  const normalizedNormal: MoveScore[] = normal.map((s) => ({
+  const normalizedNormal: NormalizedScore[] = normal.map((s) => ({
     move: s.move,
     from: s.from,
     to: s.to,
@@ -31,7 +57,7 @@ export function normalizeScores(raw: RawScore[]): MoveScore[] {
     mateIn: null,
   }));
 
-  const normalizedMates: MoveScore[] = mates.map((s) => {
+  const normalizedMates: NormalizedScore[] = mates.map((s) => {
     const isGood = (s.mateIn ?? 0) > 0;
     return {
       move: s.move,

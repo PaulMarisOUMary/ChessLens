@@ -2,6 +2,8 @@ import { useState, useCallback } from "react";
 import { Chess } from "chess.js";
 import type { Square } from "chess.js";
 import type { EditablePiece } from "../types";
+import { sanitizeFen, setFenTurn } from "../utils/fen";
+import { INITIAL_FEN } from "../utils/fen";
 
 export interface UseEditMode {
   isEditMode: boolean;
@@ -12,7 +14,6 @@ export interface UseEditMode {
   setSelectedPalettePiece: (piece: EditablePiece | null) => void;
   toggleErase: () => void;
   applyPieceMove: (from: string, to: string, fen: string) => string | null;
-
   applySquareAction: (square: string, fen: string) => string | null;
   applyPaletteDrop: (
     piece: EditablePiece,
@@ -22,15 +23,6 @@ export interface UseEditMode {
   clearBoard: (fen: string) => string;
   resetToInitial: () => string;
   setTurn: (fen: string, turn: "w" | "b") => string;
-}
-
-const INITIAL_FEN = new Chess().fen();
-
-export function sanitizeFen(fen: string): string {
-  const parts = fen.split(" ");
-  parts[2] = "-";
-  parts[3] = "-";
-  return parts.join(" ");
 }
 
 function tryChess(fen: string): Chess {
@@ -99,12 +91,9 @@ export function useEditMode(): UseEditMode {
 
   const applySquareAction = useCallback(
     (square: string, fen: string): string | null => {
-      if (isErasing) {
-        return placePiece(fen, square, null);
-      }
-      if (selectedPalettePiece) {
+      if (isErasing) return placePiece(fen, square, null);
+      if (selectedPalettePiece)
         return placePiece(fen, square, selectedPalettePiece);
-      }
       return null;
     },
     [isErasing, selectedPalettePiece],
@@ -124,11 +113,10 @@ export function useEditMode(): UseEditMode {
 
   const resetToInitial = useCallback(() => INITIAL_FEN, []);
 
-  const setTurn = useCallback((fen: string, turn: "w" | "b"): string => {
-    const parts = fen.split(" ");
-    parts[1] = turn;
-    return parts.join(" ");
-  }, []);
+  const setTurn = useCallback(
+    (fen: string, turn: "w" | "b"): string => setFenTurn(fen, turn),
+    [],
+  );
 
   return {
     isEditMode,
