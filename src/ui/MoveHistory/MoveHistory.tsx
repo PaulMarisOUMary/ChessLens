@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import type { HistoryEntry } from "../../types";
 import styles from "./MoveHistory.module.scss";
 
@@ -9,7 +9,7 @@ export interface MoveHistoryProps {
   onGoToPly: (ply: number) => void;
 }
 
-export function MoveHistory({
+export const MoveHistory = memo(function MoveHistory({
   history,
   activePly,
   isRewinding,
@@ -62,4 +62,4 @@ export function MoveHistory({
       </div>
     </div>
   );
-}
+});

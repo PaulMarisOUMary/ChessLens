@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { EngineStatus } from "../../types";
 import styles from "./EngineStatusBar.module.scss";
 
@@ -12,11 +13,13 @@ const STATUS_LABELS: Record<EngineStatus, string> = {
   error: "Engine error",
 };
 
-export function EngineStatusBar({ status }: EngineStatusBarProps) {
+export const EngineStatusBar = memo(function EngineStatusBar({
+  status,
+}: EngineStatusBarProps) {
   return (
     <div className={styles.row}>
       <span className={`${styles.dot} ${styles[status]}`} />
       <span className={styles.label}>{STATUS_LABELS[status]}</span>
     </div>
   );
-}
+});

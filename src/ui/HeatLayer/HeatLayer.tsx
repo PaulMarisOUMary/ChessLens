@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { MoveScore, HeatmapMode } from "../../types";
 import {
   scoreToColor,
@@ -47,11 +48,19 @@ function keepBestPerKey(
 
 function getSquareData(scores: MoveScore[], mode: HeatmapMode): SquareData[] {
   return mode === "source"
-    ? keepBestPerKey(scores, (s) => s.from, (s) => s.from)
-    : keepBestPerKey(scores, (s) => s.to, (s) => s.to);
+    ? keepBestPerKey(
+        scores,
+        (s) => s.from,
+        (s) => s.from,
+      )
+    : keepBestPerKey(
+        scores,
+        (s) => s.to,
+        (s) => s.to,
+      );
 }
 
-export function HeatLayer({
+export const HeatLayer = memo(function HeatLayer({
   moveScores,
   boardWidth,
   mode,
@@ -75,7 +84,7 @@ export function HeatLayer({
       ))}
     </div>
   );
-}
+});
 
 interface HeatSquareProps extends SquareData {
   squareSize: number;
@@ -110,7 +119,11 @@ function HeatSquare({
             mode === "source" ? opacity : opacity * 0.75,
           );
 
-  const label = formatScoreLabel(rawScore, kind as import("../../types").ScoreKind, mateIn);
+  const label = formatScoreLabel(
+    rawScore,
+    kind as import("../../types").ScoreKind,
+    mateIn,
+  );
   const tagSize = squareSize * 0.36;
 
   return (

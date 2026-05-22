@@ -1,3 +1,4 @@
+import { memo } from "react";
 import styles from "./RewindControls.module.scss";
 
 export interface RewindControlsProps {
@@ -7,7 +8,7 @@ export interface RewindControlsProps {
   onReset: () => void;
 }
 
-export function RewindControls({
+export const RewindControls = memo(function RewindControls({
   activePly,
   historyLength,
   onGoToPly,
@@ -64,4 +65,4 @@ export function RewindControls({
       </button>
     </div>
   );
-}
+});

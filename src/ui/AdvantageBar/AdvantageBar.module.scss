@@ -33,6 +33,7 @@
     inset: 0;
     background: linear-gradient(90deg, transparent, #ffffff33, transparent);
     animation: scan 1.2s ease-in-out infinite;
+    will-change: transform;
 }
 
 @keyframes scan {

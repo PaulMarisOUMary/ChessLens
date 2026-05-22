@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Side } from "../../types";
 import {
   ADVANTAGE_MATE_THRESHOLD,
@@ -11,7 +12,11 @@ export interface AdvantageBarProps {
   turn: Side;
 }
 
-export function AdvantageBar({ score, isAnalysing, turn }: AdvantageBarProps) {
+export const AdvantageBar = memo(function AdvantageBar({
+  score,
+  isAnalysing,
+  turn,
+}: AdvantageBarProps) {
   const absoluteScore = score !== null ? (turn === "w" ? score : -score) : null;
 
   let whitePercent = 50;
@@ -44,4 +49,4 @@ export function AdvantageBar({ score, isAnalysing, turn }: AdvantageBarProps) {
       <span className={styles.advantageScore}>{label}</span>
     </div>
   );
-}
+});

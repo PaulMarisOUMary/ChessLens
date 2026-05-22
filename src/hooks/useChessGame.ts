@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { Chess } from "chess.js";
 import type { Square } from "chess.js";
 import type { GameStatus, HistoryEntry, Side } from "../types";
@@ -76,8 +76,10 @@ export function useChessGame(): UseChessGame {
     [activePly, historyLength, syncFromGame],
   );
 
-  const getLegalMoves = useCallback(
-    (square: string): string[] => getLegalDestinations(fen, square),
+  const getLegalMoves = useMemo(
+    () =>
+      (square: string): string[] =>
+        getLegalDestinations(fen, square),
     [fen],
   );
 

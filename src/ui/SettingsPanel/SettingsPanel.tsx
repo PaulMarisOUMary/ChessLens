@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Settings } from "../../types";
 import { DEPTH_MIN, DEPTH_MAX } from "../../constants";
 import styles from "./SettingsPanel.module.scss";
@@ -14,7 +15,7 @@ export interface SettingsPanelProps {
   onToggleEditMode: () => void;
 }
 
-export function SettingsPanel({
+export const SettingsPanel = memo(function SettingsPanel({
   settings,
   displayDepth,
   isFlipped,
@@ -93,4 +94,4 @@ export function SettingsPanel({
       </div>
     </div>
   );
-}
+});

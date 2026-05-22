@@ -14,7 +14,8 @@
 .destinationFill {
     position: absolute;
     inset: 0;
-    transition: background-color 0.25s ease;
+    transition: background-color 0.2s ease;
+    will-change: background-color;
 }
 
 .tag {
@@ -25,7 +26,8 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-    transition: background-color 0.25s ease;
+    transition: background-color 0.2s ease;
+    will-change: background-color;
 }
 
 .tagLabel {

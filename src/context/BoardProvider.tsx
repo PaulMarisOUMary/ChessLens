@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -11,6 +12,7 @@ import { useHeatmap } from "../hooks/useHeatmap";
 import { useSettings } from "../hooks/useSettings";
 import { useBoardResize } from "../hooks/useBoardResize";
 import { useEditMode } from "../hooks/useEditMode";
+import { useKeyboardRewind } from "../hooks/useKeyboardRewind";
 import { isPromotionMove } from "../utils/fen";
 import type { EditablePiece, PromotionPiece } from "../types";
 import { BoardContext } from "./BoardContext";
@@ -30,8 +32,10 @@ export function BoardProvider({ children }: { children: ReactNode }) {
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [editDragSource, setEditDragSource] = useState<string | null>(null);
+
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
-  const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
+  const [pendingPromotion, setPendingPromotion] =
+    useState<PendingPromotion | null>(null);
   const [lastFen, setLastFen] = useState(chess.fen);
 
   if (chess.fen !== lastFen) {
@@ -43,9 +47,15 @@ export function BoardProvider({ children }: { children: ReactNode }) {
   const chessRef = useRef(chess);
   const heatmapRef = useRef(heatmap);
   const editRef = useRef(edit);
-  useEffect(() => { chessRef.current = chess; });
-  useEffect(() => { heatmapRef.current = heatmap; });
-  useEffect(() => { editRef.current = edit; });
+  useEffect(() => {
+    chessRef.current = chess;
+  });
+  useEffect(() => {
+    heatmapRef.current = heatmap;
+  });
+  useEffect(() => {
+    editRef.current = edit;
+  });
 
   const { heatmapEnabled, depth } = settingsApi.settings;
 
@@ -144,8 +154,12 @@ export function BoardProvider({ children }: { children: ReactNode }) {
   const onSquareClick = useCallback(
     ({ square, piece }: { square: string; piece?: unknown }) => {
       if (editRef.current.isEditMode) {
-        const { isErasing, selectedPalettePiece, applySquareAction, applyPieceMove } =
-          editRef.current;
+        const {
+          isErasing,
+          selectedPalettePiece,
+          applySquareAction,
+          applyPieceMove,
+        } = editRef.current;
         const currentFen = chessRef.current.fen;
 
         if (isErasing) {
@@ -230,22 +244,47 @@ export function BoardProvider({ children }: { children: ReactNode }) {
     chessRef.current.loadFen(newFen);
   }, []);
 
-  const boardCursorStyle = edit.isEditMode
-    ? edit.isErasing
-      ? CURSOR_ERASE
-      : edit.selectedPalettePiece
-        ? CURSOR_PLACE
-        : editDragSource
-          ? CURSOR_GRAB
-          : CURSOR_DEFAULT
-    : "";
+  useKeyboardRewind({
+    activePly: chess.activePly,
+    historyLength: chess.history.length,
+    isEditMode: edit.isEditMode,
+    onGoToPly: chess.goToPly,
+  });
 
-  const displayScores = selectedSquare
-    ? heatmap.moveScores.filter((s) => s.from === selectedSquare)
-    : heatmap.moveScores;
+  const boardCursorStyle = useMemo(
+    () =>
+      edit.isEditMode
+        ? edit.isErasing
+          ? CURSOR_ERASE
+          : edit.selectedPalettePiece
+            ? CURSOR_PLACE
+            : editDragSource
+              ? CURSOR_GRAB
+              : CURSOR_DEFAULT
+        : "",
+    [
+      edit.isEditMode,
+      edit.isErasing,
+      edit.selectedPalettePiece,
+      editDragSource,
+    ],
+  );
 
-  const showHeatmap =
-    settingsApi.settings.heatmapEnabled && !chess.isRewinding && !edit.isEditMode;
+  const displayScores = useMemo(
+    () =>
+      selectedSquare
+        ? heatmap.moveScores.filter((s) => s.from === selectedSquare)
+        : heatmap.moveScores,
+    [heatmap.moveScores, selectedSquare],
+  );
+
+  const showHeatmap = useMemo(
+    () =>
+      settingsApi.settings.heatmapEnabled &&
+      !chess.isRewinding &&
+      !edit.isEditMode,
+    [settingsApi.settings.heatmapEnabled, chess.isRewinding, edit.isEditMode],
+  );
 
   const value: BoardContextValue = {
     chess,
@@ -271,5 +310,7 @@ export function BoardProvider({ children }: { children: ReactNode }) {
     handleSetTurn,
   };
 
-  return <BoardContext.Provider value={value}>{children}</BoardContext.Provider>;
+  return (
+    <BoardContext.Provider value={value}>{children}</BoardContext.Provider>
+  );
 }

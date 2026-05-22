@@ -47,6 +47,7 @@
     animation: scan 1.5s ease-in-out infinite;
     pointer-events: none;
     z-index: 20;
+    will-change: transform;
 }
 
 @keyframes scan {
