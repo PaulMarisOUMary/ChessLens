@@ -1,3 +1,5 @@
+@use '../abstracts' as *;
+
 *,
 *::before,
 *::after {
@@ -17,8 +19,8 @@ body {
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 13px;
     -webkit-font-smoothing: antialiased;
-    background: #0a0a0a;
-    color: #e8e8e8;
+    background: $bg;
+    color: $text-primary;
 }
 
 button {
@@ -42,7 +44,7 @@ input[type='range'] {
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #e8e8e8;
+        background: $text-primary;
         cursor: pointer;
     }
 }

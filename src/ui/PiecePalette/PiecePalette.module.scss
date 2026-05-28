@@ -10,7 +10,7 @@
     overflow: hidden;
     flex-shrink: 0;
 
-    @media (max-width: 768px) {
+    @media (max-width: $mobile-breakpoint) {
         width: 100%;
         height: auto !important;
         border-right: none;

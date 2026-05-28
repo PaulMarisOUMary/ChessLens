@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { Settings } from "../types";
 import { DEFAULT_SETTINGS } from "../constants";
 import {
@@ -21,6 +21,12 @@ export function useSettings(): UseSettings {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [displayDepth, setDisplayDepth] = useState(DEFAULT_SETTINGS.depth);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const setDepth = useCallback((v: number) => {
     const clamped = Math.min(DEPTH_MAX, Math.max(DEPTH_MIN, v));

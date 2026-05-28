@@ -17,8 +17,8 @@ export const EngineStatusBar = memo(function EngineStatusBar({
   status,
 }: EngineStatusBarProps) {
   return (
-    <div className={styles.row}>
-      <span className={`${styles.dot} ${styles[status]}`} />
+    <div className={styles.row} aria-live="polite" aria-atomic="true">
+      <span className={`${styles.dot} ${styles[status]}`} aria-hidden="true" />
       <span className={styles.label}>{STATUS_LABELS[status]}</span>
     </div>
   );

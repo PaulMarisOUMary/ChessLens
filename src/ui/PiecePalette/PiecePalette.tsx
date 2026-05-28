@@ -48,6 +48,23 @@ function PieceCell({
   );
 }
 
+function IndicatorIcon({ selected, isErasing }: { selected: EditablePiece | null; isErasing: boolean }) {
+  if (isErasing) {
+    return <span className={styles.indicatorEraseIcon}>✕</span>;
+  }
+  if (!selected) return null;
+
+  const key = pieceKey(selected) as keyof typeof defaultPieces;
+  const PieceSvg = defaultPieces[key];
+  if (!PieceSvg) return null;
+
+  return (
+    <span className={styles.indicatorIcon}>
+      <PieceSvg />
+    </span>
+  );
+}
+
 export interface PiecePaletteProps {
   selected: EditablePiece | null;
   isErasing: boolean;
@@ -80,18 +97,7 @@ export function PiecePalette({
   return (
     <aside className={styles.panel} style={{ height: panelHeight }}>
       <div className={styles.indicator}>
-        {selected &&
-          !isErasing &&
-          (() => {
-            const key = pieceKey(selected) as keyof typeof defaultPieces;
-            const PieceSvg = defaultPieces[key];
-            return PieceSvg ? (
-              <span className={styles.indicatorIcon}>
-                <PieceSvg />
-              </span>
-            ) : null;
-          })()}
-        {isErasing && <span className={styles.indicatorEraseIcon}>✕</span>}
+        <IndicatorIcon selected={selected} isErasing={isErasing} />
         <span className={styles.indicatorLabel}>{activeName}</span>
       </div>
 
@@ -133,7 +139,7 @@ export function PiecePalette({
 
       <div className={styles.turnRow}>
         <span className={styles.turnLabel}>Turn</span>
-        <div className={styles.turnToggle}>
+        <div className={styles.turnToggle} role="group" aria-label="Active side">
           <button
             className={`${styles.turnBtn} ${turn === "w" ? styles.turnActive : ""}`}
             onClick={() => onSetTurn("w")}
@@ -155,6 +161,7 @@ export function PiecePalette({
         <button
           className={`${styles.actionBtn} ${isErasing ? styles.eraseActive : ""}`}
           onClick={onToggleErase}
+          aria-pressed={isErasing}
         >
           {isErasing ? "Stop erasing" : "Erase piece"}
         </button>

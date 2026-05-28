@@ -14,7 +14,8 @@ export type WorkerOutMessage =
       isMate: boolean;
       mateIn: number | null;
     }
-  | { type: "bestmove"; moveLabel: string };
+  | { type: "bestmove"; moveLabel: string }
+  | { type: "error"; message: string };
 
 export type ScoreKind = "normal" | "mate-good" | "mate-bad";
 
@@ -54,6 +55,8 @@ export type EditablePiece = {
   type: "p" | "n" | "b" | "r" | "q" | "k";
   color: "w" | "b";
 };
+
+export type ChessPieceKey = `${"w" | "b"}${"P" | "N" | "B" | "R" | "Q" | "K"}`;
 
 export interface Settings {
   depth: number;

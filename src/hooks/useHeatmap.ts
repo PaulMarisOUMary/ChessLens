@@ -1,20 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { EngineStatus, MoveScore, Side } from "../types";
+import type { EngineStatus, MoveScore } from "../types";
 import { useStockfish } from "./useStockfish";
-import { getLegalMoves, isCheckmate } from "../utils/fen";
+import { getLegalMoves } from "../utils/fen";
 import { normalizeScores } from "../utils/score";
-import { Chess } from "chess.js";
-import { MATE_SENTINEL_CP, GLOBAL_DEPTH_BONUS } from "../constants";
+import { buildAnalysisQueue, type QueueItem } from "../utils/analysis";
+import { MATE_SENTINEL_CP } from "../constants";
 
 const GLOBAL_LABEL = "__global__";
-
-interface QueueItem {
-  type: "global" | "move";
-  moveLabel?: string;
-  fen: string;
-  depth: number;
-  isImmediateMate?: boolean;
-}
 
 interface RawScore {
   score: number;
@@ -33,25 +25,27 @@ export interface UseHeatmap {
   isReady: boolean;
   isAnalysing: boolean;
   engineStatus: EngineStatus;
-  analyse: (fen: string, turn: Side, depth: number) => void;
+  analyse: (fen: string, depth: number) => void;
   clear: () => void;
 }
 
 export function useHeatmap(): UseHeatmap {
   const [moveScores, setMoveScores] = useState<MoveScore[]>([]);
   const [globalScore, setGlobalScore] = useState<number | null>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [isAnalysing, setIsAnalysing] = useState(false);
   const [engineStatus, setEngineStatus] = useState<EngineStatus>("loading");
+  const [isAnalysing, setIsAnalysing] = useState(false);
+
+  const isReady = engineStatus === "ready" || engineStatus === "analysing";
 
   const queueRef = useRef<QueueItem[]>([]);
   const rawRef = useRef<Map<string, RawScore>>(new Map());
   const isMounted = useRef<boolean>(true);
+
   const processNextRef = useRef<() => void>(() => {});
+
   const pendingRequestRef = useRef<PendingRequest | null>(null);
 
   const onReady = useCallback(() => {
-    setIsReady(true);
     setEngineStatus("ready");
   }, []);
 
@@ -70,10 +64,18 @@ export function useHeatmap(): UseHeatmap {
     [],
   );
 
+  const onError = useCallback((message: string) => {
+    if (import.meta.env.DEV) {
+      console.error("[useHeatmap] Stockfish error:", message);
+    }
+    setEngineStatus("error");
+  }, []);
+
   const engine = useStockfish({
     onReady,
     onScore,
     onBestmove: () => processNextRef.current(),
+    onError,
   });
 
   useEffect(() => {
@@ -82,7 +84,8 @@ export function useHeatmap(): UseHeatmap {
       isMounted.current = false;
       engine.stop();
     };
-  }, [engine]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const processNext = useCallback(() => {
     if (!isMounted.current) return;
@@ -92,36 +95,18 @@ export function useHeatmap(): UseHeatmap {
       pendingRequestRef.current = null;
 
       rawRef.current = new Map();
-      const moves = getLegalMoves(fen);
+      const queue = buildAnalysisQueue(fen, depth);
 
-      if (moves.length === 0) {
-        setGlobalScore(null);
-        setMoveScores([]);
-        setIsAnalysing(false);
-        setEngineStatus("ready");
-        return;
+      if (queue.length === 0) {
+        const moves = getLegalMoves(fen);
+        if (moves.length === 0) {
+          setGlobalScore(null);
+          setMoveScores([]);
+          setIsAnalysing(false);
+          setEngineStatus("ready");
+          return;
+        }
       }
-
-      const queue: QueueItem[] = [
-        { type: "global", fen, depth: depth + GLOBAL_DEPTH_BONUS },
-        ...moves.flatMap((m): QueueItem[] => {
-          const tmp = new Chess(fen);
-          try {
-            tmp.move({ from: m.from, to: m.to, promotion: m.promotion ?? "q" });
-            return [
-              {
-                type: "move",
-                moveLabel: `${m.from}${m.to}${m.promotion ?? ""}`,
-                fen: tmp.fen(),
-                depth,
-                isImmediateMate: isCheckmate(tmp.fen()),
-              },
-            ];
-          } catch {
-            return [];
-          }
-        }),
-      ];
 
       queueRef.current = queue;
       setIsAnalysing(true);
@@ -162,7 +147,7 @@ export function useHeatmap(): UseHeatmap {
   }, [processNext]);
 
   const analyse = useCallback(
-    (fen: string, _turn: Side, depth: number) => {
+    (fen: string, depth: number) => {
       if (!isReady) return;
 
       if (isAnalysing) {
@@ -175,32 +160,11 @@ export function useHeatmap(): UseHeatmap {
       rawRef.current = new Map();
       setMoveScores([]);
 
-      const moves = getLegalMoves(fen);
-      if (moves.length === 0) {
+      const queue = buildAnalysisQueue(fen, depth);
+      if (queue.length === 0) {
         setGlobalScore(null);
         return;
       }
-
-      const queue: QueueItem[] = [
-        { type: "global", fen, depth: depth + GLOBAL_DEPTH_BONUS },
-        ...moves.flatMap((m): QueueItem[] => {
-          const tmp = new Chess(fen);
-          try {
-            tmp.move({ from: m.from, to: m.to, promotion: m.promotion ?? "q" });
-            return [
-              {
-                type: "move",
-                moveLabel: `${m.from}${m.to}${m.promotion ?? ""}`,
-                fen: tmp.fen(),
-                depth,
-                isImmediateMate: isCheckmate(tmp.fen()),
-              },
-            ];
-          } catch {
-            return [];
-          }
-        }),
-      ];
 
       queueRef.current = queue;
       setIsAnalysing(true);

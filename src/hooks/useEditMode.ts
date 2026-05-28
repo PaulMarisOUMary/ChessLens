@@ -2,8 +2,7 @@ import { useState, useCallback } from "react";
 import { Chess } from "chess.js";
 import type { Square } from "chess.js";
 import type { EditablePiece } from "../types";
-import { sanitizeFen, setFenTurn } from "../utils/fen";
-import { INITIAL_FEN } from "../utils/fen";
+import { sanitizeFen, setFenTurn, INITIAL_FEN } from "../utils/fen";
 
 export interface UseEditMode {
   isEditMode: boolean;
@@ -111,7 +110,7 @@ export function useEditMode(): UseEditMode {
     return sanitizeFen(game.fen());
   }, []);
 
-  const resetToInitial = useCallback(() => INITIAL_FEN, []);
+  const resetToInitial = useCallback((): string => INITIAL_FEN, []);
 
   const setTurn = useCallback(
     (fen: string, turn: "w" | "b"): string => setFenTurn(fen, turn),

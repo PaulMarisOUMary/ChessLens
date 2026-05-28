@@ -15,6 +15,8 @@ let currentLabel = "";
 let pendingAnalysis: { fen: string; depth: number; moveLabel: string } | null =
   null;
 
+let stopGeneration = 0;
+
 function send(msg: WorkerOutMessage): void {
   self.postMessage(msg);
 }
@@ -32,6 +34,7 @@ function startAnalysis(fen: string, depth: number, moveLabel: string): void {
 }
 
 function handleBestmove(): void {
+  ++stopGeneration;
   state = "idle";
   send({ type: "bestmove", moveLabel: currentLabel });
 
@@ -46,8 +49,9 @@ function stopCurrent(): void {
   if (!engine || state !== "analysing") return;
   state = "stopping";
   sendToEngine("stop");
+  const gen = ++stopGeneration;
   setTimeout(() => {
-    if (state === "stopping") {
+    if (state === "stopping" && stopGeneration === gen) {
       state = "idle";
       if (pendingAnalysis) {
         const next = pendingAnalysis;
@@ -106,6 +110,12 @@ function initEngine(): void {
   state = "initializing";
   engine = new Worker(STOCKFISH_PATH);
   engine.onmessage = ({ data }: MessageEvent<string>) => handleEngineLine(data);
+
+  engine.onerror = (err: ErrorEvent) => {
+    state = "uninitialized";
+    send({ type: "error", message: err.message ?? "Stockfish failed to load" });
+  };
+
   sendToEngine("uci");
 }
 

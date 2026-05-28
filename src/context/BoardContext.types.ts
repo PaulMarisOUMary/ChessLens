@@ -2,7 +2,7 @@ import type { UseChessGame } from "../hooks/useChessGame";
 import type { UseHeatmap } from "../hooks/useHeatmap";
 import type { UseSettings } from "../hooks/useSettings";
 import type { UseEditMode } from "../hooks/useEditMode";
-import type { PromotionPiece } from "../types";
+import type { ChessPieceKey, HeatmapMode, PromotionPiece } from "../types";
 
 export interface PendingPromotion {
   from: string;
@@ -27,11 +27,16 @@ export interface BoardContextValue {
 
   displayScores: UseHeatmap["moveScores"];
   showHeatmap: boolean;
+  heatmapMode: HeatmapMode;
 
   flipBoard: () => void;
   toggleEditMode: () => void;
-  onDrop: (args: { piece: { isSparePiece?: boolean }; sourceSquare: string; targetSquare: string | null }) => boolean;
-  onSquareClick: (args: { square: string; piece?: unknown }) => void;
+  onDrop: (args: {
+    piece: { isSparePiece?: boolean };
+    sourceSquare: string;
+    targetSquare: string | null;
+  }) => boolean;
+  onSquareClick: (args: { square: string; piece?: ChessPieceKey }) => void;
   onPromotionSelect: (piece: PromotionPiece | null) => void;
   handleClearBoard: () => void;
   handleResetBoard: () => void;

@@ -9,6 +9,7 @@ import { PiecePalette } from "../PiecePalette/PiecePalette";
 import { PromotionPicker } from "../PromotionPicker/PromotionPicker";
 
 import styles from "./Board.module.scss";
+import type { ChessPieceKey } from "../../types";
 
 const LIGHT_SQUARE = { backgroundColor: "#c9c9c9" };
 const DARK_SQUARE = { backgroundColor: "#4a4a4a" };
@@ -19,7 +20,6 @@ function BoardInner() {
   const {
     chess,
     heatmap,
-    settingsApi,
     edit,
     boardWidth,
     isMobile,
@@ -28,6 +28,7 @@ function BoardInner() {
     boardCursorStyle,
     displayScores,
     showHeatmap,
+    heatmapMode,
     flipBoard,
     toggleEditMode,
     onDrop,
@@ -37,15 +38,20 @@ function BoardInner() {
     handleResetBoard,
     handleSetTurn,
     selectedSquare,
+    settingsApi,
   } = useBoardContext();
 
-  const { settings, displayDepth, setDepth, setHeatmapEnabled, setHeatmapOpacity } =
-    settingsApi;
+  const {
+    settings,
+    displayDepth,
+    setDepth,
+    setHeatmapEnabled,
+    setHeatmapOpacity,
+  } = settingsApi;
 
   return (
     <div className={styles.root}>
       <div className={styles.main}>
-
         {edit.isEditMode && (
           <PiecePalette
             selected={edit.selectedPalettePiece}
@@ -62,7 +68,9 @@ function BoardInner() {
 
         <div
           className={`${styles.boardContainer} ${boardCursorStyle ? styles[boardCursorStyle as keyof typeof styles] : ""}`}
-          style={isMobile ? undefined : { width: boardWidth, height: boardWidth }}
+          style={
+            isMobile ? undefined : { width: boardWidth, height: boardWidth }
+          }
         >
           <Chessboard
             options={{
@@ -75,7 +83,10 @@ function BoardInner() {
                   targetSquare: args.targetSquare ?? null,
                 }),
               onSquareClick: (args: SquareHandlerArgs) =>
-                onSquareClick({ square: args.square, piece: args.piece }),
+                onSquareClick({
+                  square: args.square,
+                  piece: args.piece as unknown as ChessPieceKey | undefined,
+                }),
               allowDragging: true,
               lightSquareStyle: LIGHT_SQUARE,
               darkSquareStyle: DARK_SQUARE,
@@ -88,13 +99,19 @@ function BoardInner() {
             <HeatLayer
               moveScores={displayScores}
               boardWidth={boardWidth}
-              mode={selectedSquare ? "destination" : "source"}
+              mode={heatmapMode}
               opacity={settings.heatmapOpacity}
               boardFlipped={isFlipped}
             />
           )}
 
-          {heatmap.isAnalysing && <div className={styles.analysing} />}
+          {heatmap.isAnalysing && (
+            <div
+              className={styles.analysing}
+              role="status"
+              aria-label="Analysing position"
+            />
+          )}
 
           {pendingPromotion && (
             <PromotionPicker
@@ -124,6 +141,7 @@ function BoardInner() {
           displayDepth={displayDepth}
           isFlipped={isFlipped}
           isEditMode={edit.isEditMode}
+          selectedSquare={selectedSquare}
           onGoToPly={chess.goToPly}
           onReset={chess.reset}
           onSetDepth={setDepth}

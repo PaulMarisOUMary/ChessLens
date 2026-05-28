@@ -16,7 +16,7 @@ export interface UseChessGame {
   getLegalMoves: (square: string) => string[];
   goToPly: (ply: number) => void;
   reset: () => void;
-  loadFen: (fen: string) => void;
+  loadFen: (fen: string) => boolean;
 }
 
 export function useChessGame(): UseChessGame {
@@ -28,10 +28,9 @@ export function useChessGame(): UseChessGame {
   const [isGameOver, setIsGameOver] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [activePly, setActivePly] = useState(0);
-  const [historyLength, setHistoryLength] = useState(0);
 
   const historyRef = useRef<HistoryEntry[]>([]);
-  const isRewinding = activePly < historyLength;
+  const isRewinding = activePly < history.length;
 
   const syncFromGame = useCallback((game: Chess) => {
     setFen(game.fen());
@@ -42,7 +41,7 @@ export function useChessGame(): UseChessGame {
 
   const makeMove = useCallback(
     (from: string, to: string, promotion = "q"): boolean => {
-      if (activePly < historyLength) return false;
+      if (activePly < historyRef.current.length) return false;
 
       const game = gameRef.current;
       const prevTurn = game.turn() as Side;
@@ -63,17 +62,17 @@ export function useChessGame(): UseChessGame {
           ply: historyRef.current.length + 1,
         };
 
-        historyRef.current = [...historyRef.current, entry];
-        setHistory([...historyRef.current]);
-        setHistoryLength(historyRef.current.length);
-        setActivePly(historyRef.current.length);
+        const nextHistory = [...historyRef.current, entry];
+        historyRef.current = nextHistory;
+        setHistory(nextHistory);
+        setActivePly(nextHistory.length);
         syncFromGame(game);
         return true;
       } catch {
         return false;
       }
     },
-    [activePly, historyLength, syncFromGame],
+    [activePly, syncFromGame],
   );
 
   const getLegalMoves = useMemo(
@@ -100,13 +99,12 @@ export function useChessGame(): UseChessGame {
     gameRef.current = new Chess();
     historyRef.current = [];
     setHistory([]);
-    setHistoryLength(0);
     setActivePly(0);
     syncFromGame(gameRef.current);
   }, [syncFromGame]);
 
   const loadFen = useCallback(
-    (newFen: string) => {
+    (newFen: string): boolean => {
       let game: Chess;
       try {
         game = new Chess(newFen);
@@ -114,16 +112,22 @@ export function useChessGame(): UseChessGame {
         try {
           game = new Chess();
           game.load(newFen, { skipValidation: true });
+          if (import.meta.env.DEV) {
+            console.warn(
+              "[useChessGame] Loaded FEN with skipValidation — position may be invalid:",
+              newFen,
+            );
+          }
         } catch {
-          return;
+          return false;
         }
       }
       gameRef.current = game;
       historyRef.current = [];
       setHistory([]);
-      setHistoryLength(0);
       setActivePly(0);
       syncFromGame(game);
+      return true;
     },
     [syncFromGame],
   );

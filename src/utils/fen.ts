@@ -74,7 +74,6 @@ export function isPromotionMove(
 
 export function sanitizeFen(fen: string): string {
   const parts = fen.split(" ");
-  parts[2] = "-";
   parts[3] = "-";
   return parts.join(" ");
 }
@@ -83,4 +82,26 @@ export function setFenTurn(fen: string, turn: "w" | "b"): string {
   const parts = fen.split(" ");
   parts[1] = turn;
   return parts.join(" ");
+}
+
+export function formatGameStatusLabel(
+  status: GameStatus,
+  turn: Side,
+  isEditMode: boolean,
+): string {
+  if (isEditMode) return "Edit mode";
+  const side = turn === "w" ? "White" : "Black";
+  const other = turn === "w" ? "Black" : "White";
+  switch (status) {
+    case "checkmate":
+      return `Checkmate | ${other} wins`;
+    case "stalemate":
+      return "Stalemate";
+    case "draw":
+      return "Draw";
+    case "check":
+      return `Check | ${side} to play`;
+    case "playing":
+      return `${side} to play`;
+  }
 }

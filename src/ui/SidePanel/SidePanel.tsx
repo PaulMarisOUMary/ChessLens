@@ -5,6 +5,7 @@ import type {
   EngineStatus,
   Side,
 } from "../../types";
+import { formatGameStatusLabel } from "../../utils/fen";
 import { AdvantageBar } from "../AdvantageBar/AdvantageBar";
 import { MoveHistory } from "../MoveHistory/MoveHistory";
 import { RewindControls } from "../RewindControls/RewindControls";
@@ -27,6 +28,7 @@ export interface SidePanelProps {
   displayDepth: number;
   isFlipped: boolean;
   isEditMode: boolean;
+  selectedSquare: string | null;
   onGoToPly: (ply: number) => void;
   onReset: () => void;
   onSetDepth: (v: number) => void;
@@ -34,28 +36,6 @@ export interface SidePanelProps {
   onSetHeatmapOpacity: (v: number) => void;
   onFlipBoard: () => void;
   onToggleEditMode: () => void;
-}
-
-function statusLabel(
-  status: GameStatus,
-  turn: Side,
-  isEditMode: boolean,
-): string {
-  if (isEditMode) return "Edit mode";
-  const side = turn === "w" ? "White" : "Black";
-  const other = turn === "w" ? "Black" : "White";
-  switch (status) {
-    case "checkmate":
-      return `Checkmate | ${other} wins`;
-    case "stalemate":
-      return "Stalemate";
-    case "draw":
-      return "Draw";
-    case "check":
-      return `Check | ${side} to play`;
-    case "playing":
-      return `${side} to play`;
-  }
 }
 
 export function SidePanel({
@@ -85,11 +65,14 @@ export function SidePanel({
       <div className={styles.statusRow}>
         <span
           className={`${styles.statusDot} ${isEditMode ? styles.edit : styles[status]}`}
+          aria-hidden="true"
         />
         <span
           className={`${styles.statusText} ${isEditMode ? styles.edit : styles[status]}`}
+          aria-live="polite"
+          aria-atomic="true"
         >
-          {statusLabel(status, turn, isEditMode)}
+          {formatGameStatusLabel(status, turn, isEditMode)}
         </span>
         {isRewinding && !isEditMode && (
           <span className={styles.rewindBadge}>rewind</span>

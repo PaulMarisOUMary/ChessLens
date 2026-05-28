@@ -7,7 +7,7 @@
     background: $bg;
     padding: 0;
 
-    @media (max-width: 768px) {
+    @media (max-width: $mobile-breakpoint) {
         align-items: flex-start;
     }
 }
@@ -17,7 +17,7 @@
     align-items: stretch;
     border: 1px solid $border;
 
-    @media (max-width: 768px) {
+    @media (max-width: $mobile-breakpoint) {
         flex-direction: column;
         width: 100vw;
         border-left: none;
@@ -30,7 +30,7 @@
     position: relative;
     flex-shrink: 0;
 
-    @media (max-width: 768px) {
+    @media (max-width: $mobile-breakpoint) {
         width: 100% !important;
         height: auto !important;
         aspect-ratio: 1;
@@ -44,20 +44,9 @@
     right: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, #ffffff55, transparent);
-    animation: scan 1.5s ease-in-out infinite;
+    @include scan-animation(1.5s);
     pointer-events: none;
     z-index: 20;
-    will-change: transform;
-}
-
-@keyframes scan {
-    0% {
-        transform: translateX(-100%);
-    }
-
-    100% {
-        transform: translateX(100%);
-    }
 }
 
 .cursorErase {
