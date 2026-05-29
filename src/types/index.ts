@@ -49,6 +49,12 @@ export interface HistoryEntry {
   uci: string;
   side: Side;
   ply: number;
+  capturedPiece: "p" | "n" | "b" | "r" | "q" | null;
+}
+
+export interface CapturedPieceEntry {
+  type: "p" | "n" | "b" | "r" | "q";
+  color: "w" | "b";
 }
 
 export type EditablePiece = {

@@ -1,0 +1,37 @@
+@use '../../styles/abstracts' as *;
+
+.layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.dot {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    &::after {
+        content: '';
+        display: block;
+        width: 30%;
+        height: 30%;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.25);
+        flex-shrink: 0;
+    }
+
+    &.capture {
+        &::after {
+            width: 92%;
+            height: 92%;
+            background: transparent;
+            border-radius: 50%;
+            box-shadow: none;
+            border: 7px solid rgba(0, 0, 0, 0.25);
+        }
+    }
+}

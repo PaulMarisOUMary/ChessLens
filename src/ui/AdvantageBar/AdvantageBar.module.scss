@@ -3,13 +3,26 @@
 .advantageBar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
-.pieceLabel {
-    font-size: 0.85rem;
-    color: $text-muted;
-    line-height: 1;
+.pawnIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+.darkPawn svg {
+    filter: brightness(3.5) drop-shadow(0 0 1px rgba(255, 255, 255, 0.35));
 }
 
 .barTrack {

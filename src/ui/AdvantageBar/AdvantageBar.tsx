@@ -1,10 +1,14 @@
-import { memo } from "react";
+import { memo, createElement } from "react";
 import type { Side } from "../../types";
+import { getPieceSvg } from "../../utils/pieces";
 import {
   ADVANTAGE_MATE_THRESHOLD,
   ADVANTAGE_ATAN_SCALE,
 } from "../../constants";
 import styles from "./AdvantageBar.module.scss";
+
+const WhitePawn = getPieceSvg("wP");
+const BlackPawn = getPieceSvg("bP");
 
 export interface AdvantageBarProps {
   score: number | null;
@@ -25,10 +29,10 @@ export const AdvantageBar = memo(function AdvantageBar({
   if (absoluteScore !== null) {
     if (absoluteScore >= ADVANTAGE_MATE_THRESHOLD) {
       whitePercent = 100;
-      label = "M♙";
+      label = "M+";
     } else if (absoluteScore <= -ADVANTAGE_MATE_THRESHOLD) {
       whitePercent = 0;
-      label = "M♟";
+      label = "M-";
     } else {
       whitePercent =
         50 +
@@ -40,12 +44,26 @@ export const AdvantageBar = memo(function AdvantageBar({
 
   return (
     <div className={styles.advantageBar}>
-      <span className={styles.pieceLabel}>♙</span>
-      <div className={styles.barTrack}>
+      <span className={styles.pawnIcon} aria-hidden="true">
+        {WhitePawn && createElement(WhitePawn)}
+      </span>
+
+      <div
+        className={styles.barTrack}
+        role="meter"
+        aria-label="Position advantage"
+        aria-valuenow={Math.round(whitePercent)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
         <div className={styles.barFill} style={{ width: `${whitePercent}%` }} />
         {isAnalysing && <div className={styles.barScan} />}
       </div>
-      <span className={styles.pieceLabel}>♟</span>
+
+      <span className={`${styles.pawnIcon} ${styles.darkPawn}`} aria-hidden="true">
+        {BlackPawn && createElement(BlackPawn)}
+      </span>
+
       <span className={styles.advantageScore}>{label}</span>
     </div>
   );

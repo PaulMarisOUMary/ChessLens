@@ -12,12 +12,14 @@ import { useSettings } from "../hooks/useSettings";
 import { useBoardResize } from "../hooks/useBoardResize";
 import { useEditMode } from "../hooks/useEditMode";
 import { useKeyboardRewind } from "../hooks/useKeyboardRewind";
+import { useHoverMoves } from "../hooks/useHoverMoves";
 
 import { useInteractionState } from "./slices/useInteractionState";
 import { useMoveHandler } from "./slices/useMoveHandler";
 import { useEditActions } from "./slices/useEditActions";
 import { useHeatmapSync } from "./slices/useHeatmapSync";
 import { useCursorStyle } from "./slices/useCursorStyle";
+import { useCapturedDisplay } from "./slices/useCapturedDisplay";
 
 import { BoardContext } from "./BoardContext";
 import type { BoardContextValue } from "./BoardContext.types";
@@ -75,6 +77,27 @@ export function BoardProvider({ children }: { children: ReactNode }) {
     isEditMode: edit.isEditMode,
   });
 
+  const {
+    topPieces: topCapturedPieces,
+    bottomPieces: bottomCapturedPieces,
+    topAdvantage,
+    bottomAdvantage,
+    columnHeight,
+  } = useCapturedDisplay({
+    chess,
+    boardWidth,
+    isFlipped,
+    isEditMode: edit.isEditMode,
+  });
+
+  const { hoverDestinations, onMouseOverSquare, onMouseOutSquare } = useHoverMoves({
+    getLegalMoves: chess.getLegalMoves,
+    selectedSquare,
+    isGameOver: chess.isGameOver,
+    isRewinding: chess.isRewinding,
+    isEditMode: edit.isEditMode,
+  });
+
   const toggleEditMode = useCallback(() => {
     if (editRef.current.isEditMode) {
       editRef.current.exitEditMode();
@@ -121,6 +144,7 @@ export function BoardProvider({ children }: { children: ReactNode }) {
     settingsApi,
     edit,
     boardWidth,
+    columnHeight,
     isMobile,
     isFlipped,
     selectedSquare,
@@ -130,6 +154,13 @@ export function BoardProvider({ children }: { children: ReactNode }) {
     displayScores,
     showHeatmap,
     heatmapMode,
+    topCapturedPieces,
+    bottomCapturedPieces,
+    topAdvantage,
+    bottomAdvantage,
+    hoverDestinations,
+    onMouseOverSquare,
+    onMouseOutSquare,
     flipBoard,
     toggleEditMode,
     onDrop,

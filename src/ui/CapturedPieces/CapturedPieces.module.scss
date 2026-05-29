@@ -1,0 +1,54 @@
+@use '../../styles/abstracts' as *;
+
+.row {
+    display: flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 2px;
+    flex-shrink: 0;
+}
+
+.pieces {
+    display: flex;
+    align-items: center;
+
+    > span {
+        margin-right: -5px;
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+.pieceIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+.lightPiece svg {
+    opacity: 0.9;
+}
+
+.darkPiece svg {
+    filter: brightness(3.5) drop-shadow(0 0 1px rgba(255, 255, 255, 0.4));
+}
+
+.advantage {
+    @include mono;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $text-secondary;
+    margin-left: 8px;
+    flex-shrink: 0;
+}

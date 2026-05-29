@@ -30,6 +30,7 @@ export function useChessGame(): UseChessGame {
   const [activePly, setActivePly] = useState(0);
 
   const historyRef = useRef<HistoryEntry[]>([]);
+
   const isRewinding = activePly < history.length;
 
   const syncFromGame = useCallback((game: Chess) => {
@@ -60,6 +61,7 @@ export function useChessGame(): UseChessGame {
           uci: `${from}${to}`,
           side: prevTurn,
           ply: historyRef.current.length + 1,
+          capturedPiece: (result.captured as HistoryEntry["capturedPiece"]) ?? null,
         };
 
         const nextHistory = [...historyRef.current, entry];

@@ -26,6 +26,16 @@
     }
 }
 
+.boardColumn {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+
+    @media (max-width: $mobile-breakpoint) {
+        width: 100%;
+    }
+}
+
 .boardContainer {
     position: relative;
     flex-shrink: 0;

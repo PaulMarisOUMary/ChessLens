@@ -70,10 +70,14 @@
     background: transparent;
     border: 1px solid transparent;
     color: $text-secondary;
-    font-size: 0.75rem;
-    padding: 0.2rem 0.4rem;
+    font-size: 0.72rem;
+    padding: 0.18rem 0.3rem;
     text-align: left;
     transition: background 0.1s, color 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    min-width: 0;
 
     &:hover:not(:disabled) {
         background: $surface-3;
@@ -90,4 +94,25 @@
         color: $text-muted;
         cursor: default;
     }
+}
+
+.pieceIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+.san {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

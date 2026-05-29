@@ -5,3 +5,5 @@ export const MOBILE_BREAKPOINT = 768;
 
 export const HEATMAP_OPACITY_MIN = 0.1;
 export const HEATMAP_OPACITY_MAX = 1;
+
+export const CAPTURE_STRIP_HEIGHT = 22;
